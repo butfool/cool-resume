@@ -1,46 +1,46 @@
 # Resume Generator
 
-一个基于 JSON 数据源和 Vite 的通用简历生成器。它可以本地编辑、预览和导出简历，也可以构建为可直接部署到 Vercel 等静态托管平台的单文件 Demo。
+[![Online demo](https://img.shields.io/badge/Demo-Online-000000?logo=vercel&logoColor=white)](https://cool-resume.but.cool/)
+[![Local-first](https://img.shields.io/badge/Data-Local--first-0F766E)](#privacy-boundary)
+[![Built with Vite](https://img.shields.io/badge/Built%20with-Vite%208-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-3DA639?logo=opensourceinitiative&logoColor=white)](LICENSE)
 
-## Quick start
+一个便利 AI，基于 JSON 数据源、本地优先的通用简历生成器。可以本地/在线编辑、预览和导出简历。
 
-```bash
-npm install
-npm run init
-npm run dev
-```
+![Resume Generator demo](docs/images/demo.jpeg)
 
-开发服务器默认使用 `http://localhost:60090`。真实简历保存在被忽略的 `data/` 目录中；可提交的脱敏模板位于 `data-example/`。
+## Features
+
+- 本地优先：数据都在本地，JSON 格式，并且提示词都写好了，可以让 AI 直接修改、生成和优化简历内容
+- 灵活自由：方便自定义模板、主题和排版
+- 多版本支持：支持创建多个简历版本，便于针对不同岗位定制
+- 在线预览：支持在浏览器中实时预览简历效果
+- 导出：支持导出 PDF、PNG 等格式
 
 ## 预览与导出
 
 - 简历预览在桌面端始终使用固定的 A4 宽度画布，关闭 `分隔线` 不会把内容扩展为全宽或改变文本换行。
 - `分隔线` 仅控制是否在预览中显示页面边界、页面间距和页码提示；中文界面显示为“分隔线”，英文界面显示为 “Page breaks”。
 - PDF 始终导出为 A4 分页文档，不受预览分隔线开关影响；图片始终导出为没有页面间距的连续长图。
+- `npm run build` 会生成 `output/resume.html`；`npm run pdf` 会在 `output/` 中生成带版本和时间戳的 PDF。`dist/` 仅作为构建过程目录。
 
+## Best Practices
 
-## Build and deploy
+> 在线版仅供演示，建议在本地使用。
 
-```bash
-npm run build
-```
-
-构建结果为 `dist/index.html`，CSS、JavaScript 和 `data-example/` 模板数据都会内联到单个 HTML 文件中。Vercel 项目请将 Root Directory 设置为本目录，Build Command 设置为 `npm run build`，Output Directory 设置为 `dist`。
-
-静态页面首次访问时加载 `data-example/`；访客后续的编辑、版本和排版设置只保存在自己的浏览器 IndexedDB/localStorage 中，不会上传到服务器。
-
-## Features
-
-- JSON 编辑器：实时预览、格式化、导入、导出和恢复模板
-- 无限层级简历版本树：新建、复制、重命名、拖拽排序和叶子删除
-- A4 分页预览、主题和排版调整
-- 浏览器内导出 A4 PDF 或连续长图
-- Vite 单文件构建，适合静态部署
-
-## Privacy boundary
-
-公开仓库只包含 `data-example/` 脱敏模板。真实 `data/`、构建产物、历史材料、个人附件和本地工具文件不应提交。
+1. 确定主题：用默认的模板，或者让 AI 帮你定制化主题和风格
+2. 确定模块：如果现有的模块不够用，可以让 AI 帮你生成新的模块
+3. 确定内容：自己写，或者让 AI 阅读你的工作内容，逐个板块填充
+4. 内容优化：让 AI 帮你优化内容，或者针对内容进行提问，找到风险点和优化点
+5. 导出发布：生成想要的格式进行使用
+6. 不断优化：创建不同的分支和版本，针对不同的岗位和公司进行优化
 
 ## License
 
-代码以 MIT License 发布。模板中的个人信息、简历文字和第三方素材仅用于演示，发布前请替换并确认授权。
+项目原创代码及 `data-example/` 中的原创示例内容采用 [MIT License](LICENSE) 发布。第三方依赖、图标和其他明确标注的第三方内容仍适用各自的许可证，详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。用户创建或导入的简历内容不因使用本项目而改变权利归属。
+
+示例人物、组织、学校、经历和成果数据均为虚构，仅用于演示模板结构，不指向任何真实个人或机构。请勿把示例内容直接作为真实简历使用。
+
+## Privacy boundary
+
+公开仓库只包含 `data-example/` 虚构模板。真实 `data/`、`output/` 中的构建产物、历史材料、个人附件和本地工具文件不应提交。静态版的编辑内容保存在当前浏览器的 IndexedDB/localStorage 中；项目目前不会将简历数据上传到外部服务。
