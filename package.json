@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Be Better 2026",
   "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "scripts": {
     "init": "node scripts/init-resume.js",
     "dev": "vite",

@@ -1,5 +1,6 @@
 node_modules/
 dist/
+output/
 .DS_Store
 CLAUDE.md
 design-qa.md
@@ -8,7 +9,5 @@ design-qa.md
 resume.json
 resume.local.json
 data/
-resume.html
-resume.pdf
-resume-*.pdf
 * copy*.json
+.vercel

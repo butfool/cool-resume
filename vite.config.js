@@ -6,6 +6,7 @@ import { execFile } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
+import { buildThirdPartyNotices } from './scripts/third-party-notices.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dataRoot = path.resolve(__dirname, 'data');
@@ -202,13 +203,20 @@ export default defineConfig({
       },
     },
     {
-      name: 'copy-to-resume-html',
+      name: 'finalize-single-file',
       writeBundle() {
         const distIndex = path.resolve(__dirname, 'dist/index.html');
-        const target = path.resolve(__dirname, 'resume.html');
+        const outputDir = path.resolve(__dirname, 'output');
+        const target = path.join(outputDir, 'resume.html');
         if (fs.existsSync(distIndex)) {
-          fs.copyFileSync(distIndex, target);
-          console.log('✓ copied dist/index.html → resume.html');
+          const notices = buildThirdPartyNotices();
+          if (notices.includes('-->')) throw new Error('Third-party notices contain an unsafe HTML comment terminator');
+          const html = fs.readFileSync(distIndex, 'utf8');
+          const output = html.replace('<!DOCTYPE html>', `<!DOCTYPE html>\n<!--\n${notices}\n-->`);
+          fs.writeFileSync(distIndex, output, 'utf8');
+          fs.mkdirSync(outputDir, { recursive: true });
+          fs.writeFileSync(target, output, 'utf8');
+          console.log('✓ copied dist/index.html → output/resume.html');
         }
       },
     },

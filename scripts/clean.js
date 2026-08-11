@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 
-const targets = ['dist', 'resume.html', 'resume.pdf'];
+const targets = ['dist', 'output'];
 
 for (const target of targets) {
   const fullPath = path.join(ROOT, target);
@@ -18,10 +18,6 @@ for (const target of targets) {
   } catch {
     // ignore
   }
-}
-
-for (const target of fs.readdirSync(ROOT).filter(name => /^resume-.+\.pdf$/i.test(name))) {
-  try { fs.rmSync(path.join(ROOT, target), { force: true }); } catch { /* ignore */ }
 }
 
 console.log('✓ 已清理构建产物');

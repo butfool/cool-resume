@@ -12,8 +12,9 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
+const OUTPUT_DIR = path.join(ROOT, 'output');
 
-const HTML_FILE = path.join(ROOT, 'resume.html');
+const HTML_FILE = path.join(OUTPUT_DIR, 'resume.html');
 let pdfFile;
 
 function safeFilePart(value, fallback = 'resume') {
@@ -78,7 +79,7 @@ try {
     versionName: document.querySelector('.resume-version-picker-button > span')?.textContent?.trim() || document.title,
     versionId: document.querySelector('.resume-version-tree-item[aria-current="true"]')?.dataset.versionId || 'active-version',
   }));
-  pdfFile = path.join(ROOT, `resume-${safeFilePart(exportInfo.versionName)}-${safeFilePart(exportInfo.versionId)}-${exportTimestamp()}.pdf`);
+  pdfFile = path.join(OUTPUT_DIR, `resume-${safeFilePart(exportInfo.versionName)}-${safeFilePart(exportInfo.versionId)}-${exportTimestamp()}.pdf`);
 
   // 静态产物没有开发服务器的默认状态；显式开启分页后再导出。
   if (await page.$('.page-separator-page-wrapper') === null) {
@@ -109,6 +110,6 @@ try {
   if (browser) await browser.close();
 }
 
-// dist 是过程目录；resume.html 与带版本信息的 PDF 都是正式产物，保留以便核对。
+// dist 是过程目录；output/ 保留可交付的 HTML 与 PDF 以便核对。
 fs.rmSync(path.join(ROOT, 'dist'), { recursive: true, force: true });
-console.log(`✓ 已清理过程目录 dist，保留 ${path.basename(pdfFile || 'resume.pdf')}`);
+console.log(`✓ 已清理过程目录 dist，保留 output/${path.basename(pdfFile || 'resume.pdf')}`);
