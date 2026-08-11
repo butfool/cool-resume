@@ -4,6 +4,15 @@
   "experience": "3 年经验",
   "theme": "navy",
   "order": ["header", "basicInfo", "summary", "work", "projects", "skills", "education"],
+  "style": {
+    "spacing": {
+      "resume-line-height": 1.2,
+      "resume-body-padding-y": 11,
+      "resume-section-gap": 12,
+      "resume-entry-gap": 16,
+      "resume-list-gap": 3
+    }
+  },
   "basicInfo": {"items": [
     {"label": "求职意向", "value": "Java 后端工程师"},
     {"label": "现居城市", "value": "杭州"},

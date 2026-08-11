@@ -11,10 +11,12 @@
   --resume-canvas-padding-x: 14mm;
   --text-font-size: 13px;
 
-  /* 以下 5 个间距变量（resume-line-height / resume-body-padding-y /
-     resume-section-gap / resume-entry-gap / resume-list-gap）默认值
-     来自当前版本 JSON 的 style.spacing，由 main.js 在启动时写入。
-     不在此处硬编码，避免与 JSON 配置冲突。 */
+  /* JSON 的 style.spacing 会在启动时覆盖这些安全默认值。 */
+  --resume-line-height: 1.2;
+  --resume-body-padding-y: 11px;
+  --resume-section-gap: 12px;
+  --resume-entry-gap: 16px;
+  --resume-list-gap: 3px;
   --resume-header-gap: 16px;
   --resume-header-bottom-gap: 6px;
   --resume-section-title-gap: 8px;
