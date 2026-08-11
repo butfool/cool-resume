@@ -1,0 +1,30 @@
+{
+  "name": "myresume2",
+  "version": "1.0.0",
+  "description": "Be Better 2026",
+  "type": "module",
+  "scripts": {
+    "init": "node scripts/init-resume.js",
+    "dev": "vite",
+    "build": "vite build",
+    "pdf": "npm run build && node scripts/export-pdf.js",
+    "clean": "node scripts/clean.js"
+  },
+  "keywords": [
+    "resume"
+  ],
+  "devDependencies": {
+    "puppeteer-core": "^25.5.0",
+    "vite": "^8.2.0",
+    "vite-plugin-singlefile": "^2.3.3"
+  },
+  "dependencies": {
+    "@codemirror/lang-json": "^6.0.2",
+    "@codemirror/theme-one-dark": "^6.1.3",
+    "codemirror": "^6.0.2",
+    "html2canvas": "^1.4.1",
+    "i18next": "^26.3.6",
+    "lucide": "^0.468.0",
+    "sortablejs": "^1.15.7"
+  }
+}

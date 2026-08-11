@@ -1,0 +1,197 @@
+/* ===== MyResume2 主题变量 =====
+   通过 <html data-theme="..."> 切换。
+   默认主题为 minimal（当前简洁风格）。
+   注：间距相关变量已全部迁移到 style.css 的 --resume-* 变量，可在 dev 面板中调节。
+*/
+
+:root,
+[data-theme="minimal"] {
+  /* 页面 */
+  --theme-bg: #ffffff;
+  --theme-text: #1f2937;
+  --theme-text-soft: #6b7280;
+
+  /* 强调与分隔 */
+  --theme-accent: #2563eb;
+  --theme-border: #e5e7eb;
+
+  /* Header */
+  --theme-header-name-color: #111827;
+  --theme-header-title-color: #2563eb;
+
+  /* Section 标题 */
+  --theme-section-title-bg: transparent;
+  --theme-section-title-text: #111827;
+  --theme-section-title-border: #e5e7eb;
+  --theme-section-title-border-width: 1px;
+  --theme-section-title-padding: 0 0 3px 0;
+  --theme-section-title-border-radius: 0;
+  --theme-section-title-letter-spacing: 1px;
+  --theme-section-icon-color: #2563eb;
+  --theme-header-border: transparent;
+  --theme-header-border-width: 0;
+  --theme-header-padding-bottom: 0;
+
+  /* Entry */
+  --theme-entry-title-color: #111827;
+
+  /* 列表 marker */
+  --theme-marker-color: #2563eb;
+
+  /* 高亮 */
+  --theme-highlight-bg: rgba(250, 204, 21, 0.35);
+
+  /* 链接 */
+  --theme-link-color: #2563eb;
+  --theme-link-hover-border: #2563eb;
+}
+
+/* ===== Navy 主题：深蓝标题栏风格 ===== */
+[data-theme="navy"] {
+  /* 页面 */
+  --theme-bg: #ffffff;
+  --theme-text: #1f2937;
+  --theme-text-soft: #4b5563;
+
+  /* 强调与分隔 */
+  --theme-accent: #1e3a5f;
+  --theme-border: #d1d5db;
+
+  /* Header */
+  --theme-header-name-color: #111827;
+  --theme-header-title-color: #1e3a5f;
+
+  /* Section 标题：深蓝背景条 + 白字 */
+  --theme-section-title-bg: #1e3a5f;
+  --theme-section-title-text: #ffffff;
+  --theme-section-title-border: transparent;
+  --theme-section-title-border-width: 0;
+  --theme-section-title-padding: 3px 8px;
+  --theme-section-title-border-radius: 3px;
+  --theme-section-title-letter-spacing: 0.5px;
+  --theme-section-icon-color: #ffffff;
+  --theme-header-border: #d1d5db;
+  --theme-header-border-width: 0;
+  --theme-header-padding-bottom: 0;
+
+  /* Entry */
+  --theme-entry-title-color: #111827;
+
+  /* 列表 marker */
+  --theme-marker-color: #1e3a5f;
+
+  /* 高亮 */
+  --theme-highlight-bg: rgba(250, 204, 21, 0.35);
+
+  /* 链接保持蓝色，保证可识别 */
+  --theme-link-color: #2563eb;
+  --theme-link-hover-border: #2563eb;
+}
+
+/* ===== ATS 主题：黑白高可读，适合通用投递与 ATS 解析 ===== */
+[data-theme="ats"] {
+  --theme-bg: #ffffff;
+  --theme-text: #202124;
+  --theme-text-soft: #5f6368;
+  --theme-accent: #202124;
+  --theme-border: #c9cdd1;
+  --theme-header-name-color: #111111;
+  --theme-header-title-color: #3c4043;
+  --theme-section-title-bg: transparent;
+  --theme-section-title-text: #111111;
+  --theme-section-title-border: #202124;
+  --theme-section-title-border-width: 2px;
+  --theme-section-title-padding: 0 0 4px 0;
+  --theme-section-title-border-radius: 0;
+  --theme-section-title-letter-spacing: 0.8px;
+  --theme-section-icon-color: #5f6368;
+  --theme-entry-title-color: #202124;
+  --theme-marker-color: #202124;
+  --theme-highlight-bg: #f1f3f4;
+  --theme-link-color: #185abc;
+  --theme-link-hover-border: #185abc;
+  --theme-header-border: #202124;
+  --theme-header-border-width: 1px;
+  --theme-header-padding-bottom: 10px;
+}
+
+/* ===== Teal 主题：低饱和松石色，适合技术岗位的现代风格 ===== */
+[data-theme="teal"] {
+  --theme-bg: #ffffff;
+  --theme-text: #203234;
+  --theme-text-soft: #557174;
+  --theme-accent: #0f766e;
+  --theme-border: #cfe2df;
+  --theme-header-name-color: #123b3b;
+  --theme-header-title-color: #0f766e;
+  --theme-section-title-bg: #e8f5f2;
+  --theme-section-title-text: #115e59;
+  --theme-section-title-border: transparent;
+  --theme-section-title-border-width: 0;
+  --theme-section-title-padding: 4px 9px;
+  --theme-section-title-border-radius: 4px;
+  --theme-section-title-letter-spacing: 0.4px;
+  --theme-section-icon-color: #0f766e;
+  --theme-entry-title-color: #183f40;
+  --theme-marker-color: #0f766e;
+  --theme-highlight-bg: #d9f3ee;
+  --theme-link-color: #0f766e;
+  --theme-link-hover-border: #0f766e;
+  --theme-header-border: #9ac8c1;
+  --theme-header-border-width: 0;
+  --theme-header-padding-bottom: 0;
+}
+
+/* ===== Graphite 主题：深灰与橙色点缀，强调工程感与层次 ===== */
+[data-theme="graphite"] {
+  --theme-bg: #fcfcfb;
+  --theme-text: #292524;
+  --theme-text-soft: #78716c;
+  --theme-accent: #c2410c;
+  --theme-border: #dedbd7;
+  --theme-header-name-color: #1c1917;
+  --theme-header-title-color: #c2410c;
+  --theme-section-title-bg: transparent;
+  --theme-section-title-text: #292524;
+  --theme-section-title-border: #c2410c;
+  --theme-section-title-border-width: 2px;
+  --theme-section-title-padding: 0 0 4px 0;
+  --theme-section-title-border-radius: 0;
+  --theme-section-title-letter-spacing: 0.6px;
+  --theme-section-icon-color: #c2410c;
+  --theme-entry-title-color: #292524;
+  --theme-marker-color: #c2410c;
+  --theme-highlight-bg: #ffedd5;
+  --theme-link-color: #9a3412;
+  --theme-link-hover-border: #c2410c;
+  --theme-header-border: #dedbd7;
+  --theme-header-border-width: 0;
+  --theme-header-padding-bottom: 0;
+}
+
+/* ===== Editorial 主题：沉稳酒红，适合强调内容叙事的高级感 ===== */
+[data-theme="editorial"] {
+  --theme-bg: #fffdfb;
+  --theme-text: #332b2b;
+  --theme-text-soft: #756567;
+  --theme-accent: #8f2d45;
+  --theme-border: #eadcdf;
+  --theme-header-name-color: #4a1f2b;
+  --theme-header-title-color: #8f2d45;
+  --theme-section-title-bg: transparent;
+  --theme-section-title-text: #6e2438;
+  --theme-section-title-border: #d9b4bf;
+  --theme-section-title-border-width: 1px;
+  --theme-section-title-padding: 0 0 4px 0;
+  --theme-section-title-border-radius: 0;
+  --theme-section-title-letter-spacing: 1px;
+  --theme-section-icon-color: #8f2d45;
+  --theme-entry-title-color: #4a1f2b;
+  --theme-marker-color: #8f2d45;
+  --theme-highlight-bg: #f8e8ed;
+  --theme-link-color: #8f2d45;
+  --theme-link-hover-border: #8f2d45;
+  --theme-header-border: #d9b4bf;
+  --theme-header-border-width: 0;
+  --theme-header-padding-bottom: 0;
+}

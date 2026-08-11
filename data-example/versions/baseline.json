@@ -1,0 +1,24 @@
+{
+  "name": "张明",
+  "title": "Java 后端工程师",
+  "experience": "3 年经验",
+  "theme": "navy",
+  "order": ["header", "basicInfo", "summary", "work", "projects", "skills", "education"],
+  "basicInfo": {"items": [
+    {"label": "求职意向", "value": "Java 后端工程师"},
+    {"label": "现居城市", "value": "杭州"},
+    {"label": "联系方式", "value": "13800000000 / zhangming@example.com"}
+  ]},
+  "summary": {"items": [
+    "3 年 Java 后端开发经验，具备需求分析、接口设计、服务开发、联调与线上问题排查能力。",
+    "熟练使用 Spring Boot、MySQL、Redis，关注服务性能、稳定性和可维护性。"
+  ]},
+  "work": [{"company": "杭州知行数科有限公司", "position": "Java 后端工程师", "date": "2023年7月至今", "summary": ["负责企业服务平台的后端服务开发、接口联调与线上问题处理。", "参与订单、客户和运营模块建设，完善日志与异常处理规范。"]}],
+  "projects": [{"name": "企业服务管理平台", "date": "2024年3月至今", "techStack": "Java、Spring Boot、MyBatis、MySQL、Redis", "role": "后端开发工程师", "summary": ["设计 RESTful 接口及参数校验规则，完成核心业务服务和数据持久化。", "通过组合索引与 Redis 缓存优化查询性能，将平均响应时间由 600ms 降至 180ms。"]}],
+  "skills": [
+    {"category": "编程语言", "keywords": "熟练：Java；了解：JavaScript、Python"},
+    {"category": "后端框架", "keywords": "熟练：Spring Boot、Spring；熟悉：MyBatis"},
+    {"category": "数据库与中间件", "keywords": "熟悉：MySQL、Redis、Elasticsearch"}
+  ],
+  "education": [{"institution": "杭州电子科技大学", "degree": "学士，计算机科学与技术", "date": "2019年9月–2023年6月"}]
+}

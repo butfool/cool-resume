@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.DS_Store
+CLAUDE.md
+design-qa.md
+
+# The real resume and generated exports are private; publish data-example/.
+resume.json
+resume.local.json
+data/
+resume.html
+resume.pdf
+resume-*.pdf
+* copy*.json

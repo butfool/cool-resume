@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 3,
+  "activeVersionId": "baseline",
+  "versions": [
+    {
+      "id": "baseline",
+      "name": "示例简历",
+      "parentId": null,
+      "file": "versions/baseline.json",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ]
+}

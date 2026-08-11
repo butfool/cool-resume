@@ -1,0 +1,623 @@
+/* ===== MyResume2 主题化样式 =====
+   颜色与风格由 src/themes.css 中的 CSS 变量驱动。
+   间距由下方 --resume-* 变量驱动，可在 dev 面板中实时调节。
+   切换 <html data-theme="..."> 即可更换主题。
+*/
+
+@import './themes.css';
+
+:root {
+  --page-max-width: 210mm;
+  --text-font-size: 13px;
+
+  /* 以下 5 个间距变量（resume-line-height / resume-body-padding-y /
+     resume-section-gap / resume-entry-gap / resume-list-gap）默认值
+     来自当前版本 JSON 的 style.spacing，由 main.js 在启动时写入。
+     不在此处硬编码，避免与 JSON 配置冲突。 */
+  --resume-header-gap: 16px;
+  --resume-header-bottom-gap: 6px;
+  --resume-section-title-gap: 8px;
+  --resume-entry-header-gap: 3px;
+  --resume-list-top-gap: 4px;
+  --resume-keyword-gap: 6px;
+  --resume-skill-gap: 6px;
+  --resume-basic-info-gap: 6px;
+  --resume-footer-gap: 32px;
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "Source Han Sans CN", "Noto Sans CJK SC",
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono:
+    "SF Mono", "JetBrains Mono", "Fira Code", Consolas, Monaco,
+    "Courier New", monospace;
+}
+
+* { box-sizing: border-box; }
+*:not(dialog) { margin: 0; }
+
+html {
+  font-size: var(--text-font-size);
+  /* 自然流模式也保留画布与简历纸张的背景层次。 */
+  background: #525659;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--theme-text);
+  background: var(--theme-bg);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-autospace: normal;
+  line-height: var(--resume-line-height);
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  /* 自然流与 A4 页使用同一组水平/垂直边距；避免未定义变量令整条声明失效。 */
+  padding: var(--resume-body-padding-y) 14mm;
+}
+
+/* ===== Header：姓名 + 岗位/年限 ===== */
+.resume-header {
+  margin-bottom: var(--resume-header-gap);
+  border-bottom: var(--theme-header-border-width) solid var(--theme-header-border);
+  padding-bottom: var(--theme-header-padding-bottom);
+}
+.resume-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: var(--resume-header-bottom-gap);
+}
+.resume-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--theme-header-name-color);
+  letter-spacing: -0.5px;
+}
+.resume-title-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--theme-header-title-color);
+}
+.resume-title-separator {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* ===== Links ===== */
+a {
+  color: var(--theme-link-color);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-bottom-color 0.2s;
+}
+a:hover { border-bottom-color: var(--theme-link-hover-border); }
+
+/* ===== Section ===== */
+.resume-section { margin-top: var(--resume-section-gap); }
+.resume-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: var(--theme-section-title-letter-spacing);
+  color: var(--theme-section-title-text);
+  background: var(--theme-section-title-bg);
+  margin-bottom: var(--resume-section-title-gap);
+  padding: var(--theme-section-title-padding);
+  border-bottom: var(--theme-section-title-border-width) solid var(--theme-section-title-border);
+  border-radius: var(--theme-section-title-border-radius);
+}
+.resume-section-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--theme-section-icon-color);
+}
+
+/* ===== Basic Info ===== */
+.resume-basic-info {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--resume-basic-info-gap) 32px;
+  font-size: 14px;
+}
+.resume-basic-info-item {
+  display: flex;
+  gap: 8px;
+}
+.resume-basic-info-label {
+  color: var(--theme-text-soft);
+  flex-shrink: 0;
+  min-width: 4em;
+}
+.resume-basic-info-value {
+  color: var(--theme-text);
+}
+
+/* ===== Entry ===== */
+.resume-entry { margin-bottom: var(--resume-entry-gap); }
+.resume-entry:last-child { margin-bottom: 0; }
+.resume-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: var(--resume-entry-header-gap);
+}
+.resume-entry-title {
+  font-size: 15.5px;
+  font-weight: 600;
+  color: var(--theme-entry-title-color);
+  margin-bottom: 2px;
+}
+.resume-entry-title-separator {
+  margin: 0 0.45em;
+  font-size: 0.75em;
+  opacity: 0.65;
+}
+.resume-entry-organization {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--theme-text-soft);
+}
+.resume-entry-date {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--theme-text-soft);
+  white-space: nowrap;
+}
+
+/* ===== Summary / Bullet lists ===== */
+.resume-summary-content ul {
+  margin-top: var(--resume-list-top-gap);
+  padding-left: 20px;
+  list-style-type: disc;
+}
+.resume-entry-summary {
+  margin-top: 4px;
+}
+.resume-entry-summary ul {
+  margin-top: var(--resume-list-top-gap);
+  padding-left: 20px;
+  list-style-type: disc;
+}
+.resume-summary-content li,
+.resume-entry-summary li {
+  margin-bottom: var(--resume-list-gap);
+  line-height: var(--resume-line-height);
+}
+.resume-summary-content li::marker,
+.resume-entry-summary li::marker { color: var(--theme-marker-color); }
+.resume-summary-content p,
+.resume-entry-summary p {
+  font-size: 14.5px;
+  margin-bottom: 0;
+}
+
+.resume-summary-content strong,
+.resume-entry-summary strong,
+.resume-project-meta-value strong {
+  font-weight: 700;
+  color: var(--theme-text);
+}
+
+.resume-summary-content em,
+.resume-entry-summary em,
+.resume-project-meta-value em {
+  font-style: italic;
+}
+
+.resume-summary-content mark,
+.resume-entry-summary mark,
+.resume-project-meta-value mark {
+  background: var(--theme-highlight-bg);
+  color: var(--theme-text);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+/* ===== Keywords line（项目关键字等）===== */
+.resume-labeled-list {
+  margin-top: var(--resume-keyword-gap);
+  font-size: 13px;
+  color: var(--theme-text-soft);
+}
+
+/* ===== Project meta（项目背景 / 技术栈 / 职责）===== */
+.resume-project-meta-list {
+  margin-top: 4px;
+  margin-bottom: 2px;
+}
+.resume-project-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 14px;
+  line-height: var(--resume-line-height);
+}
+.resume-project-meta-label {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--theme-text-soft);
+  min-width: 4.5em;
+}
+.resume-project-meta-value {
+  color: var(--theme-text);
+}
+.resume-project-meta-value strong {
+  font-weight: 700;
+  color: var(--theme-text);
+}
+.resume-project-meta-value em {
+  font-style: italic;
+}
+.resume-project-meta-value mark {
+  background: var(--theme-highlight-bg);
+  color: var(--theme-text);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+/* ===== Project divider ===== */
+.resume-project-divider {
+  border: none;
+  border-top: 1.5px solid var(--theme-border);
+  margin: 14px 0 10px 0;
+  opacity: 0.8;
+}
+
+/* ===== Project divider (inside a project) ===== */
+.resume-project-divider {
+  border: none;
+  height: 1px;
+  margin: 14px 0 10px 0;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--theme-border) 50%,
+    transparent
+  );
+  opacity: 0.45;
+}
+
+/* ===== Project entry separator (between projects) ===== */
+.resume-project-entry {
+  position: relative;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+}
+.resume-project-entry::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--theme-border);
+  opacity: 0.85;
+}
+.resume-project-entry:last-child {
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+.resume-project-entry:last-child::after {
+  display: none;
+}
+
+/* ===== Skills ===== */
+.resume-skill-item {
+  display: grid;
+  grid-template-columns: minmax(76px, 20%) minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: 14px;
+  margin-bottom: var(--resume-skill-gap);
+}
+.resume-skill-item:last-child { margin-bottom: 0; }
+.resume-skill-name {
+  font-weight: 600;
+  color: var(--theme-text);
+  line-height: 1.45;
+}
+.resume-skill-keywords {
+  font-size: 13.5px;
+  color: var(--theme-text-soft);
+  line-height: 1.45;
+  min-width: 0;
+}
+.resume-skill-group {
+  display: inline;
+}
+.resume-skill-group + .resume-skill-group::before {
+  content: ' · ';
+  color: var(--theme-border);
+}
+.resume-skill-level {
+  display: inline-block;
+  margin-right: 5px;
+  color: var(--theme-accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.resume-skill-level::after {
+  content: ':';
+  margin-left: 1px;
+}
+.resume-skill-values {
+  color: var(--theme-text-soft);
+}
+
+/* ===== Languages ===== */
+.resume-language-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.resume-language-item:last-child { margin-bottom: 0; }
+.resume-language-name { font-weight: 600; color: var(--theme-text); }
+.resume-language-fluency { font-size: 13px; color: var(--theme-text-soft); }
+
+/* ===== Footer ===== */
+.resume-footer {
+  margin-top: var(--resume-footer-gap);
+  padding-top: 16px;
+  border-top: 1px solid var(--theme-border);
+  font-size: 12px;
+  color: var(--theme-text-soft);
+  text-align: center;
+}
+
+/* ===== Print（A4）===== */
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  html,
+  body {
+    background: transparent !important;
+  }
+
+  body {
+    max-width: none;
+    padding: 14mm;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* A4 分页模式下 body 不需要额外 padding，边距由 .a4-page 控制 */
+  html.a4-preview-mode body {
+    padding: 0;
+  }
+
+  .resume-footer { display: none; }
+  a { border-bottom: none; text-decoration: none; }
+
+  /* 当使用 JS 行级分页（A4 预览模式）时，直接打印分页容器 */
+  html.a4-preview-mode .a4-original-content {
+    display: none !important;
+  }
+
+  html.a4-preview-mode .a4-page-wrapper {
+    break-after: page;
+    width: 210mm !important;
+    height: 297mm !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin: 0 auto !important;
+  }
+
+  html.a4-preview-mode .a4-page {
+    transform: none !important;
+  }
+
+  html.a4-preview-mode .a4-page-number {
+    display: none !important;
+  }
+
+  html.a4-preview-mode #app {
+    display: block !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    align-items: stretch !important;
+  }
+
+  /* 未启用 JS 分页时，隐藏分页容器 */
+  html:not(.a4-preview-mode) .a4-page-wrapper,
+  html:not(.a4-preview-mode) .a4-page-number {
+    display: none !important;
+  }
+
+  /* 未启用 JS 分页时，保持自然流打印的 break 规则 */
+  html:not(.a4-preview-mode) .resume-section,
+  html:not(.a4-preview-mode) .resume-entry,
+  html:not(.a4-preview-mode) .resume-basic-info-item,
+  html:not(.a4-preview-mode) .resume-skill-item {
+    break-inside: avoid;
+  }
+
+  html:not(.a4-preview-mode) .resume-entry-summary li,
+  html:not(.a4-preview-mode) .resume-summary-content li {
+    orphans: 2;
+    widows: 2;
+  }
+
+  html:not(.a4-preview-mode) .resume-section-title {
+    break-after: avoid;
+  }
+}
+
+/* ===== A4 预览模式 =====
+   dev 环境由面板切换；生产构建默认开启，供 HTML 与 PDF 共用。
+   - 每页为真实 A4 尺寸（210×297mm）的白色纸张
+   - 屏幕背景变灰，纸张堆叠并带阴影
+   - 按内容高度自动分页，并用 transform 缩放适配视口
+   - 不再使用非标准的 zoom 属性
+*/
+:root {
+  --a4-preview-scale: 1;
+}
+
+/* 屏幕外测量容器：与 A4 内容区等宽，不参与布局 */
+.a4-measurer {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+  max-width: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+html.a4-preview-mode,
+body.a4-preview-mode {
+  background: #525659;
+}
+
+body.a4-preview-mode {
+  max-width: none;
+  padding: 0;
+}
+
+.a4-preview-mode #app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  padding: 32px 16px;
+}
+
+/* 原始内容在预览时隐藏，打印时恢复 */
+.a4-preview-mode .a4-original-content {
+  display: none;
+}
+
+.a4-page-wrapper {
+  width: calc(210mm * var(--a4-preview-scale));
+  height: calc(297mm * var(--a4-preview-scale));
+  position: relative;
+  flex-shrink: 0;
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.06),
+    0 8px 30px rgba(0, 0, 0, 0.22);
+  background: transparent;
+}
+
+.a4-page {
+  width: 210mm;
+  height: 297mm;
+  padding: 14mm;
+  background: #ffffff;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: scale(var(--a4-preview-scale));
+  transform-origin: top left;
+}
+
+.a4-page-content {
+  width: 100%;
+}
+
+/* 每页首行/末行去掉额外 margin，保证上下边距严格对齐 */
+.a4-page-content > .a4-row:first-child {
+  margin-top: 0 !important;
+}
+
+.a4-page-content > .a4-row:last-child {
+  margin-bottom: 0 !important;
+}
+
+.a4-page-number {
+  position: absolute;
+  top: 4mm;
+  right: 14mm;
+  font-size: 11px;
+  line-height: 1;
+  color: #6b7280;
+  font-family: var(--font-mono);
+  pointer-events: none;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== A4 行单位 =====
+   把简历内容拆成更细的行单位后，用这些样式维持与自然流近似的间距。
+*/
+.a4-row {
+  display: block;
+}
+
+.a4-row-section-title {
+  margin-top: var(--resume-section-gap);
+}
+
+.a4-row-entry-header,
+.a4-row-project-header {
+  margin-bottom: var(--resume-list-top-gap, 4px);
+}
+
+/* 对齐自然流中项目条目的 16px + 分隔线 + 16px 间距。 */
+.a4-row-project-separator {
+  height: 32px;
+  position: relative;
+}
+
+.a4-project-separator {
+  position: absolute;
+  top: 16px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--theme-border);
+  opacity: 0.85;
+}
+
+.a4-row-section-title + .a4-row-bullet {
+  margin-top: var(--resume-list-top-gap, 4px);
+}
+
+.a4-row-bullet + .a4-row-bullet {
+  margin-top: var(--resume-list-gap);
+}
+
+.a4-row-bullet ul {
+  list-style-type: disc;
+  list-style-position: outside;
+  padding-left: 20px;
+  margin: 0;
+}
+
+.a4-row-bullet li {
+  line-height: var(--resume-line-height);
+  font-size: 14.5px;
+  margin-bottom: 0;
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 640px) {
+  /* A4 预览是固定纸张，仅缩放整页；移动端规则不能改写页内排版。 */
+  html:not(.a4-preview-mode) body { padding: 24px 20px; }
+  html:not(.a4-preview-mode) .resume-header-top { flex-direction: column; gap: 4px; }
+  html:not(.a4-preview-mode) .resume-title-line { width: 100%; }
+  html:not(.a4-preview-mode) .resume-basic-info { grid-template-columns: 1fr; }
+  html:not(.a4-preview-mode) .resume-skill-item { grid-template-columns: 1fr; row-gap: 2px; }
+}
