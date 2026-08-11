@@ -471,7 +471,10 @@ export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThe
     updateSpacingOutputs();
     refreshPageSeparators();
   });
-  function printResume() {
+  async function printResume() {
+    closeImageDialog();
+    // Let the dialog's hidden state reach the render tree before print captures it.
+    await new Promise(resolve => requestAnimationFrame(resolve));
     const previousTitle = document.title;
     document.title = exportFileName(catalog, activeVersion);
     window.addEventListener('afterprint', () => { document.title = previousTitle; }, { once: true });
@@ -485,7 +488,7 @@ export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThe
     submit.disabled = true;
     imageDialogStatus.hidden = true;
     try {
-      if (exportType.value === 'pdf') printResume();
+      if (exportType.value === 'pdf') await printResume();
       else await exportResumeImage({
           format: imageDialogForm.querySelector('[data-image-format]').value,
           scale: imageDialogForm.querySelector('[data-image-scale]').value,

@@ -88,7 +88,14 @@ body:not(.page-separator-mode), body.page-separator-mode #app { transition: padd
   .resume-editor-toolbar-visible body:not(.page-separator-mode) { padding-top: var(--resume-editor-toolbar-offset, 154px); }
   .resume-editor-toolbar-visible body.page-separator-mode #app { padding-top: calc(var(--resume-editor-toolbar-offset, 154px) + 8px); }
 }
-@media print { .resume-editor-toolbar, .resume-editor-toolbar-restore { display: none !important; } }
+@media print {
+  .resume-editor-toolbar,
+  .resume-editor-toolbar-restore,
+  .resume-image-dialog,
+  .resume-version-dialog {
+    display: none !important;
+  }
+}
 
 .resume-image-dialog {
   position: fixed;
