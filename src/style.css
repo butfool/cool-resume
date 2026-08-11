@@ -7,7 +7,8 @@
 @import './themes.css';
 
 :root {
-  --page-max-width: 210mm;
+  --resume-canvas-width: 210mm;
+  --resume-canvas-padding-x: 14mm;
   --text-font-size: 13px;
 
   /* 以下 5 个间距变量（resume-line-height / resume-body-padding-y /
@@ -51,10 +52,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-autospace: normal;
   line-height: var(--resume-line-height);
-  max-width: var(--page-max-width);
+  max-width: var(--resume-canvas-width);
   margin: 0 auto;
-  /* 自然流与 A4 页使用同一组水平/垂直边距；避免未定义变量令整条声明失效。 */
-  padding: var(--resume-body-padding-y) 14mm;
+  /* 连续预览和分页页使用同一组水平边距，保证切换后不改变换行。 */
+  padding: var(--resume-body-padding-y) var(--resume-canvas-padding-x);
 }
 
 /* ===== Header：姓名 + 岗位/年限 ===== */
@@ -398,20 +399,20 @@ a:hover { border-bottom-color: var(--theme-link-hover-border); }
     print-color-adjust: exact;
   }
 
-  /* A4 分页模式下 body 不需要额外 padding，边距由 .a4-page 控制 */
-  html.a4-preview-mode body {
+  /* 显示分页分隔线时，边距由 .page-separator-page 控制。 */
+  html.page-separator-mode body {
     padding: 0;
   }
 
   .resume-footer { display: none; }
   a { border-bottom: none; text-decoration: none; }
 
-  /* 当使用 JS 行级分页（A4 预览模式）时，直接打印分页容器 */
-  html.a4-preview-mode .a4-original-content {
+  /* 当显示 JS 行级分页分隔线时，直接打印分页容器。 */
+  html.page-separator-mode .page-separator-original-content {
     display: none !important;
   }
 
-  html.a4-preview-mode .a4-page-wrapper {
+  html.page-separator-mode .page-separator-page-wrapper {
     break-after: page;
     width: 210mm !important;
     height: 297mm !important;
@@ -420,15 +421,15 @@ a:hover { border-bottom-color: var(--theme-link-hover-border); }
     margin: 0 auto !important;
   }
 
-  html.a4-preview-mode .a4-page {
+  html.page-separator-mode .page-separator-page {
     transform: none !important;
   }
 
-  html.a4-preview-mode .a4-page-number {
+  html.page-separator-mode .page-separator-page-number {
     display: none !important;
   }
 
-  html.a4-preview-mode #app {
+  html.page-separator-mode #app {
     display: block !important;
     padding: 0 !important;
     gap: 0 !important;
@@ -436,43 +437,43 @@ a:hover { border-bottom-color: var(--theme-link-hover-border); }
   }
 
   /* 未启用 JS 分页时，隐藏分页容器 */
-  html:not(.a4-preview-mode) .a4-page-wrapper,
-  html:not(.a4-preview-mode) .a4-page-number {
+  html:not(.page-separator-mode) .page-separator-page-wrapper,
+  html:not(.page-separator-mode) .page-separator-page-number {
     display: none !important;
   }
 
   /* 未启用 JS 分页时，保持自然流打印的 break 规则 */
-  html:not(.a4-preview-mode) .resume-section,
-  html:not(.a4-preview-mode) .resume-entry,
-  html:not(.a4-preview-mode) .resume-basic-info-item,
-  html:not(.a4-preview-mode) .resume-skill-item {
+  html:not(.page-separator-mode) .resume-section,
+  html:not(.page-separator-mode) .resume-entry,
+  html:not(.page-separator-mode) .resume-basic-info-item,
+  html:not(.page-separator-mode) .resume-skill-item {
     break-inside: avoid;
   }
 
-  html:not(.a4-preview-mode) .resume-entry-summary li,
-  html:not(.a4-preview-mode) .resume-summary-content li {
+  html:not(.page-separator-mode) .resume-entry-summary li,
+  html:not(.page-separator-mode) .resume-summary-content li {
     orphans: 2;
     widows: 2;
   }
 
-  html:not(.a4-preview-mode) .resume-section-title {
+  html:not(.page-separator-mode) .resume-section-title {
     break-after: avoid;
   }
 }
 
-/* ===== A4 预览模式 =====
-   dev 环境由面板切换；生产构建默认开启，供 HTML 与 PDF 共用。
+/* ===== 分页分隔线预览 =====
+   开关仅决定是否显示页面边界；PDF 始终使用 A4 页面。
    - 每页为真实 A4 尺寸（210×297mm）的白色纸张
    - 屏幕背景变灰，纸张堆叠并带阴影
    - 按内容高度自动分页，并用 transform 缩放适配视口
    - 不再使用非标准的 zoom 属性
 */
 :root {
-  --a4-preview-scale: 1;
+  --page-separator-scale: 1;
 }
 
-/* 屏幕外测量容器：与 A4 内容区等宽，不参与布局 */
-.a4-measurer {
+/* 屏幕外测量容器：与页面内容区等宽，不参与布局。 */
+.page-separator-measurer {
   position: absolute;
   left: -9999px;
   top: 0;
@@ -483,17 +484,17 @@ a:hover { border-bottom-color: var(--theme-link-hover-border); }
   margin: 0 !important;
 }
 
-html.a4-preview-mode,
-body.a4-preview-mode {
+html.page-separator-mode,
+body.page-separator-mode {
   background: #525659;
 }
 
-body.a4-preview-mode {
+body.page-separator-mode {
   max-width: none;
   padding: 0;
 }
 
-.a4-preview-mode #app {
+.page-separator-mode #app {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -502,13 +503,13 @@ body.a4-preview-mode {
 }
 
 /* 原始内容在预览时隐藏，打印时恢复 */
-.a4-preview-mode .a4-original-content {
+.page-separator-mode .page-separator-original-content {
   display: none;
 }
 
-.a4-page-wrapper {
-  width: calc(210mm * var(--a4-preview-scale));
-  height: calc(297mm * var(--a4-preview-scale));
+.page-separator-page-wrapper {
+  width: calc(var(--resume-canvas-width) * var(--page-separator-scale));
+  height: calc(297mm * var(--page-separator-scale));
   position: relative;
   flex-shrink: 0;
   border-radius: 2px;
@@ -518,33 +519,33 @@ body.a4-preview-mode {
   background: transparent;
 }
 
-.a4-page {
-  width: 210mm;
+.page-separator-page {
+  width: var(--resume-canvas-width);
   height: 297mm;
-  padding: 14mm;
+  padding: var(--resume-canvas-padding-x);
   background: #ffffff;
   overflow: hidden;
   position: absolute;
   top: 0;
   left: 0;
-  transform: scale(var(--a4-preview-scale));
+  transform: scale(var(--page-separator-scale));
   transform-origin: top left;
 }
 
-.a4-page-content {
+.page-separator-page-content {
   width: 100%;
 }
 
 /* 每页首行/末行去掉额外 margin，保证上下边距严格对齐 */
-.a4-page-content > .a4-row:first-child {
+.page-separator-page-content > .page-separator-row:first-child {
   margin-top: 0 !important;
 }
 
-.a4-page-content > .a4-row:last-child {
+.page-separator-page-content > .page-separator-row:last-child {
   margin-bottom: 0 !important;
 }
 
-.a4-page-number {
+.page-separator-page-number {
   position: absolute;
   top: 4mm;
   right: 14mm;
@@ -559,29 +560,29 @@ body.a4-preview-mode {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-/* ===== A4 行单位 =====
+/* ===== 分页行单位 =====
    把简历内容拆成更细的行单位后，用这些样式维持与自然流近似的间距。
 */
-.a4-row {
+.page-separator-row {
   display: block;
 }
 
-.a4-row-section-title {
+.page-separator-row-section-title {
   margin-top: var(--resume-section-gap);
 }
 
-.a4-row-entry-header,
-.a4-row-project-header {
+.page-separator-row-entry-header,
+.page-separator-row-project-header {
   margin-bottom: var(--resume-list-top-gap, 4px);
 }
 
 /* 对齐自然流中项目条目的 16px + 分隔线 + 16px 间距。 */
-.a4-row-project-separator {
+.page-separator-row-project-separator {
   height: 32px;
   position: relative;
 }
 
-.a4-project-separator {
+.page-separator-project-separator {
   position: absolute;
   top: 16px;
   left: 0;
@@ -591,22 +592,22 @@ body.a4-preview-mode {
   opacity: 0.85;
 }
 
-.a4-row-section-title + .a4-row-bullet {
+.page-separator-row-section-title + .page-separator-row-bullet {
   margin-top: var(--resume-list-top-gap, 4px);
 }
 
-.a4-row-bullet + .a4-row-bullet {
+.page-separator-row-bullet + .page-separator-row-bullet {
   margin-top: var(--resume-list-gap);
 }
 
-.a4-row-bullet ul {
+.page-separator-row-bullet ul {
   list-style-type: disc;
   list-style-position: outside;
   padding-left: 20px;
   margin: 0;
 }
 
-.a4-row-bullet li {
+.page-separator-row-bullet li {
   line-height: var(--resume-line-height);
   font-size: 14.5px;
   margin-bottom: 0;
@@ -614,10 +615,10 @@ body.a4-preview-mode {
 
 /* ===== Mobile ===== */
 @media (max-width: 640px) {
-  /* A4 预览是固定纸张，仅缩放整页；移动端规则不能改写页内排版。 */
-  html:not(.a4-preview-mode) body { padding: 24px 20px; }
-  html:not(.a4-preview-mode) .resume-header-top { flex-direction: column; gap: 4px; }
-  html:not(.a4-preview-mode) .resume-title-line { width: 100%; }
-  html:not(.a4-preview-mode) .resume-basic-info { grid-template-columns: 1fr; }
-  html:not(.a4-preview-mode) .resume-skill-item { grid-template-columns: 1fr; row-gap: 2px; }
+  /* 分页分隔线使用固定纸张并整体缩放；移动端规则不能改写页内排版。 */
+  html:not(.page-separator-mode) body { padding: 24px 20px; }
+  html:not(.page-separator-mode) .resume-header-top { flex-direction: column; gap: 4px; }
+  html:not(.page-separator-mode) .resume-title-line { width: 100%; }
+  html:not(.page-separator-mode) .resume-basic-info { grid-template-columns: 1fr; }
+  html:not(.page-separator-mode) .resume-skill-item { grid-template-columns: 1fr; row-gap: 2px; }
 }

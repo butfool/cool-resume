@@ -1,6 +1,6 @@
 import './dev-panel.css';
 import { t } from './app-i18n.js';
-import { getStoredA4Preview, setA4Preview, refreshA4Preview } from './a4-mode.js';
+import { getStoredPageSeparators, setPageSeparators, refreshPageSeparators } from './page-separator-mode.js';
 import { exportResumeImage } from './image-export.js';
 import { createIcons } from 'lucide';
 import { APP_ICONS } from './icon-set.js';
@@ -129,7 +129,7 @@ function setToolbarVisibility(visible) {
   try { localStorage.setItem(STORAGE_KEY_TOOLBAR, String(visible)); } catch { /* ignore */ }
 }
 
-/** 顶部编辑栏：承接主题、排版、A4 预览和导出控制。 */
+/** 顶部编辑栏：承接主题、排版、分页分隔线和导出控制。 */
 export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThemeChange, onEditorToggle, locale = 'zh-CN', locales = [], onLocaleChange, catalog, activeVersion, onVersionChange, onVersionCreate, onVersionCopy, onVersionRename, onVersionDelete, onVersionMove }) {
   const root = document.documentElement;
   SPACING_DEFAULTS = Object.fromEntries(SPACING_CONTROLS.map(({ key }) => {
@@ -159,7 +159,7 @@ export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThe
           ${THEMES.map(theme => `<option value="${theme.id}" ${theme.id === currentTheme ? 'selected' : ''}>${locale === 'en-US' ? theme.en : theme.label}</option>`).join('')}
         </select></label>
         ${locales.length ? `<label class="resume-editor-control" title="${t(locale, 'app.language')}"><select class="resume-editor-locale-select" aria-label="${t(locale, 'app.language')}">${locales.map(item => `<option value="${item.code}" ${item.code === locale ? 'selected' : ''}>${item.label}</option>`).join('')}</select></label>` : ''}
-        <label class="resume-editor-toggle" title="${t(locale, 'app.a4Title')}"><input type="checkbox" class="resume-editor-a4-toggle" /><span>${t(locale, 'app.a4')}</span></label>
+        <label class="resume-editor-toggle" title="${t(locale, 'app.pageSeparatorsTitle')}"><input type="checkbox" class="resume-editor-page-separator-toggle" /><span>${t(locale, 'app.pageSeparators')}</span></label>
         <span class="resume-editor-toolbar-divider"></span>
         <button type="button" class="resume-editor-toolbar-button" data-action="spacing" aria-expanded="false" title="${t(locale, 'app.spacingTitle')}"><i data-lucide="sliders-horizontal"></i><span>${t(locale, 'app.spacing')}</span></button>
         <button type="button" class="resume-editor-toolbar-button" data-action="reset-theme" title="${t(locale, 'app.reset')}"><i data-lucide="rotate-ccw"></i><span>${t(locale, 'app.reset')}</span></button>
@@ -225,7 +225,7 @@ export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThe
   const exportType = imageDialog.querySelector('[data-export-type]');
   const imageOptions = imageDialog.querySelector('[data-image-options]');
   const editorButton = toolbar.querySelector('[data-action="editor"]');
-  const a4Toggle = toolbar.querySelector('.resume-editor-a4-toggle');
+  const pageSeparatorToggle = toolbar.querySelector('.resume-editor-page-separator-toggle');
   const drawer = toolbar.querySelector('.resume-editor-toolbar-drawer');
   const spacingButton = toolbar.querySelector('[data-action="spacing"]');
   const spacingSliders = toolbar.querySelectorAll('.resume-editor-spacing-item input');
@@ -308,7 +308,7 @@ export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThe
       applySpacing(spacingValues);
       setStoredSpacing(spacingValues);
       updateSpacingOutputs();
-      refreshA4Preview();
+      refreshPageSeparators();
     });
   });
   updateSpacingOutputs();
@@ -444,8 +444,8 @@ export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThe
     editorButton.title = open ? t(locale, 'app.closeJson') : t(locale, 'app.openJson');
   };
   window.addEventListener('resume-editor-toggle', handleEditorToggle);
-  a4Toggle.checked = getStoredA4Preview();
-  a4Toggle.addEventListener('change', () => setA4Preview(a4Toggle.checked));
+  pageSeparatorToggle.checked = getStoredPageSeparators();
+  pageSeparatorToggle.addEventListener('change', () => setPageSeparators(pageSeparatorToggle.checked));
   spacingButton.addEventListener('click', () => {
     const open = drawer.classList.contains('is-open');
     drawer.classList.toggle('is-open', !open);
@@ -465,7 +465,7 @@ export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThe
     applySpacing({});
     spacingSliders.forEach(slider => { slider.value = SPACING_DEFAULTS[slider.dataset.key]; });
     updateSpacingOutputs();
-    refreshA4Preview();
+    refreshPageSeparators();
   });
   function printResume() {
     const previousTitle = document.title;

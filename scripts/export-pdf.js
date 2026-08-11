@@ -2,7 +2,7 @@
 /**
  * export-pdf.js — 用 Chrome 无头模式把当前简历版本导出为带版本和时间的 PDF
  * 复用原 Makefile 中的 Chrome 路径，通过 Puppeteer 连接本机 Chrome，
- * 以 0 边距打印 A4，确保与 A4 预览的边距完全一致。
+ * 以 0 边距打印 A4，确保与分页分隔线预览的边距完全一致。
  */
 import puppeteer from 'puppeteer-core';
 import fs from 'node:fs';
@@ -69,7 +69,7 @@ try {
   });
 
   const page = await browser.newPage();
-  // 构建产物本身就是 A4 分页视图，PDF 直接打印同一份 DOM。
+  // PDF 显式开启分页分隔线后，直接打印同一份页面 DOM。
   await page.goto(`file://${HTML_FILE}`, {
     waitUntil: 'networkidle0',
   });
@@ -81,16 +81,16 @@ try {
   pdfFile = path.join(ROOT, `resume-${safeFilePart(exportInfo.versionName)}-${safeFilePart(exportInfo.versionId)}-${exportTimestamp()}.pdf`);
 
   // 静态产物没有开发服务器的默认状态；显式开启分页后再导出。
-  if (await page.$('.a4-page-wrapper') === null) {
+  if (await page.$('.page-separator-page-wrapper') === null) {
     await page.evaluate(() => {
-      const toggle = document.querySelector('.resume-editor-a4-toggle');
+      const toggle = document.querySelector('.resume-editor-page-separator-toggle');
       if (toggle && !toggle.checked) toggle.click();
     });
   }
 
   // 等待 JS 分页完成（main.js 在 load 时同步完成，这里再做一次保险检查）
   await page.waitForFunction(() => {
-    return document.querySelectorAll('.a4-page-wrapper').length > 0;
+    return document.querySelectorAll('.page-separator-page-wrapper').length > 0;
   }, { timeout: 10000 });
 
   await page.pdf({

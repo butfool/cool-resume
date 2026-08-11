@@ -10,9 +10,9 @@
 }
 .resume-editor-toolbar[hidden] { display: none; }
 .resume-editor-toolbar.is-hidden { opacity: 0; transform: translateY(-100%); pointer-events: none; }
-.resume-editor-toolbar-visible body:not(.a4-preview-mode) { padding-top: var(--resume-editor-toolbar-offset, 66px); }
-.resume-editor-toolbar-visible body.a4-preview-mode #app { padding-top: var(--resume-editor-toolbar-offset, 66px); }
-body:not(.a4-preview-mode), body.a4-preview-mode #app { transition: padding-top 220ms cubic-bezier(.2,.8,.2,1); }
+.resume-editor-toolbar-visible body:not(.page-separator-mode) { padding-top: var(--resume-editor-toolbar-offset, 66px); }
+.resume-editor-toolbar-visible body.page-separator-mode #app { padding-top: var(--resume-editor-toolbar-offset, 66px); }
+body:not(.page-separator-mode), body.page-separator-mode #app { transition: padding-top 220ms cubic-bezier(.2,.8,.2,1); }
 .resume-editor-toolbar-main { display: flex; min-height: 50px; align-items: center; justify-content: space-between; gap: 18px; max-width: 1440px; margin: 0 auto; padding: 7px 20px; }
 .resume-editor-toolbar-brand { display: inline-flex; align-items: center; gap: 9px; flex: 0 0 auto; font-size: 14px; font-weight: 700; letter-spacing: -.02em; }
 .resume-editor-brand-mark { display: grid; width: 27px; height: 27px; place-items: center; border: 1px solid #d6d3d1; border-radius: 8px; background: #fff; color: #57534e; box-shadow: 0 2px 5px rgba(41,37,36,.06); }
@@ -65,14 +65,14 @@ body:not(.a4-preview-mode), body.a4-preview-mode #app { transition: padding-top 
 .resume-editor-toolbar-button, .resume-editor-theme-select, .resume-editor-locale-select, .resume-editor-toggle { transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease, box-shadow 150ms ease, transform 150ms ease; }
 .resume-editor-toolbar-button:active, .resume-editor-toolbar-restore:active { transform: translateY(1px) scale(.98); }
 @media (prefers-reduced-motion: reduce) {
-  .resume-editor-toolbar, .resume-editor-toolbar-drawer, .resume-editor-toolbar-button, .resume-editor-theme-select, .resume-editor-locale-select, .resume-editor-toggle, .resume-editor-toolbar-restore, body:not(.a4-preview-mode), body.a4-preview-mode #app { transition: none; }
+  .resume-editor-toolbar, .resume-editor-toolbar-drawer, .resume-editor-toolbar-button, .resume-editor-theme-select, .resume-editor-locale-select, .resume-editor-toggle, .resume-editor-toolbar-restore, body:not(.page-separator-mode), body.page-separator-mode #app { transition: none; }
 }
 @media (max-width: 840px) {
   .resume-editor-toolbar-main { align-items: flex-start; flex-direction: column; gap: 10px; }
   .resume-editor-toolbar-controls { justify-content: flex-start; flex-wrap: wrap; }
   .resume-editor-spacing-grid { grid-template-columns: 1fr; }
-  .resume-editor-toolbar-visible body:not(.a4-preview-mode) { padding-top: var(--resume-editor-toolbar-offset, 140px); }
-  .resume-editor-toolbar-visible body.a4-preview-mode #app { padding-top: var(--resume-editor-toolbar-offset, 140px); }
+  .resume-editor-toolbar-visible body:not(.page-separator-mode) { padding-top: var(--resume-editor-toolbar-offset, 140px); }
+  .resume-editor-toolbar-visible body.page-separator-mode #app { padding-top: var(--resume-editor-toolbar-offset, 140px); }
 }
 @media (max-width: 540px) {
   .resume-editor-toolbar-main { padding-right: 14px; padding-left: 14px; }
@@ -81,8 +81,8 @@ body:not(.a4-preview-mode), body.a4-preview-mode #app { transition: padding-top 
   .resume-editor-theme-select { max-width: 112px; }
   .resume-editor-spacing-grid { grid-template-columns: 1fr; }
   .resume-editor-toolbar-drawer-header { align-items: flex-start; flex-direction: column; gap: 4px; }
-  .resume-editor-toolbar-visible body:not(.a4-preview-mode) { padding-top: var(--resume-editor-toolbar-offset, 154px); }
-  .resume-editor-toolbar-visible body.a4-preview-mode #app { padding-top: var(--resume-editor-toolbar-offset, 154px); }
+  .resume-editor-toolbar-visible body:not(.page-separator-mode) { padding-top: var(--resume-editor-toolbar-offset, 154px); }
+  .resume-editor-toolbar-visible body.page-separator-mode #app { padding-top: var(--resume-editor-toolbar-offset, 154px); }
 }
 @media print { .resume-editor-toolbar, .resume-editor-toolbar-restore { display: none !important; } }
 

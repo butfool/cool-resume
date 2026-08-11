@@ -1,18 +1,18 @@
 import html2canvas from 'html2canvas';
-import { getStoredA4Preview, setA4Preview } from './a4-mode.js';
+import { getStoredPageSeparators, setPageSeparators } from './page-separator-mode.js';
 
 function nextFrame() {
   return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 }
 
 /**
- * 导出自然流简历为一张连续图片。A4 预览开启时，暂时恢复自然流，
+ * 导出自然流简历为一张连续图片。分页分隔线开启时，暂时恢复自然流，
  * 避免把分页容器的截断和页间距带入图片。
  */
 export async function exportResumeImage({ format = 'png', scale = 2, fileName = 'resume' } = {}) {
-  const wasA4 = getStoredA4Preview();
-  if (wasA4) {
-    setA4Preview(false);
+  const hadPageSeparators = getStoredPageSeparators();
+  if (hadPageSeparators) {
+    setPageSeparators(false);
     await nextFrame();
   }
 
@@ -56,8 +56,8 @@ export async function exportResumeImage({ format = 'png', scale = 2, fileName = 
     return { width: canvas.width, height: canvas.height };
   } finally {
     captureRoot.remove();
-    if (wasA4) {
-      setA4Preview(true, true);
+    if (hadPageSeparators) {
+      setPageSeparators(true, true);
       await nextFrame();
     }
   }

@@ -1,16 +1,16 @@
 /**
- * a4-mode.js — A4 预览模式
+ * page-separator-mode.js — 分页分隔线预览
  *
- * 将简历内容按真实 A4 尺寸（210×297mm）分页渲染，模拟 PDF 输出效果。
- * 顶部编辑栏可在自然流与此模式间切换；打印时复用当前分页 DOM，
- * 保证编辑器中的预览与 PDF 输出一致。
+ * 将简历内容按真实 A4 尺寸（210×297mm）分页渲染，仅用于显示预览分页分隔线。
+ * 顶部编辑栏可在连续预览与分页分隔线之间切换；打印时复用分页 DOM，
+ * 保证预览分隔和 PDF 输出一致。
  *
  * 核心思路：
  * 1. 在屏幕外创建一个与 A4 内容区等宽的测量容器，克隆已渲染的简历 DOM；
  * 2. 把简历内容拆成更细的「行」单位：章节标题、条目头部、基本信息块、
  *    技能项、教育经历，以及每一条 bullet；
  * 3. 按行顺序打包进每一页，章节标题尽量与后续第一行保持在同一页；
- * 4. 每一页用 overflow:hidden 的 .a4-page 容器承载分配到的行；
+ * 4. 每一页用 overflow:hidden 的 .page-separator-page 容器承载分配到的行；
  * 5. 用 CSS transform 按视口宽度缩放整页，避免使用非标准的 zoom；
  * 6. 保留一份原始 DOM 作为重新分页的数据源；打印时直接输出分页 DOM。
  */
@@ -18,10 +18,10 @@
 const A4_WIDTH_MM = 210;
 const A4_HEIGHT_MM = 297;
 const A4_MARGIN_MM = 14;
-const STORAGE_KEY = 'myresume2-a4-preview';
+const STORAGE_KEY = 'myresume2-page-separators';
 
 let originalNodes = null;
-let isEnabled = false;
+let showPageSeparators = false;
 let resizeHandler = null;
 
 function mmToPx(mm) {
@@ -30,11 +30,11 @@ function mmToPx(mm) {
 }
 
 /**
- * 克隆 #app 下当前渲染的简历节点（排除 A4 预览自身产生的元素）。
+ * 克隆 #app 下当前渲染的简历节点（排除分页分隔线自身产生的元素）。
  */
 function cloneResumeNodes(app) {
-  // 若处于 A4 预览模式，原始内容被收纳在 .a4-original-content 中
-  const originalContainer = app.querySelector('.a4-original-content');
+  // 若已显示分页分隔线，原始内容被收纳在 .page-separator-original-content 中
+  const originalContainer = app.querySelector('.page-separator-original-content');
   if (originalContainer) {
     return Array.from(originalContainer.childNodes).map(node => node.cloneNode(true));
   }
@@ -43,8 +43,8 @@ function cloneResumeNodes(app) {
       node =>
         !(node.nodeType === Node.ELEMENT_NODE &&
           typeof node.className === 'string' &&
-          (node.classList.contains('a4-page-wrapper') ||
-           node.classList.contains('a4-original-content')))
+          (node.classList.contains('page-separator-page-wrapper') ||
+           node.classList.contains('page-separator-original-content')))
     )
     .map(node => node.cloneNode(true));
 }
@@ -54,14 +54,14 @@ function cloneResumeNodes(app) {
  */
 function createRow(type, child) {
   const wrapper = document.createElement('div');
-  wrapper.className = `a4-row a4-row-${type}`;
+  wrapper.className = `page-separator-row page-separator-row-${type}`;
   wrapper.appendChild(child);
   return wrapper;
 }
 
 function createProjectSeparatorRow() {
   const separator = document.createElement('div');
-  separator.className = 'a4-project-separator';
+  separator.className = 'page-separator-project-separator';
   const row = createRow('project-separator', separator);
   row.dataset.keepWithNext = '1';
   return row;
@@ -91,8 +91,8 @@ function extractEntryRows(entryNode) {
 
   const headerRowContent = document.createElement('div');
   headerRowContent.className = isProject
-    ? 'a4-row-project-header-content'
-    : 'a4-row-entry-header-content';
+    ? 'page-separator-row-project-header-content'
+    : 'page-separator-row-entry-header-content';
 
   const header = entryNode.querySelector(':scope > .resume-entry-header');
   if (header) headerRowContent.appendChild(header.cloneNode(true));
@@ -172,7 +172,7 @@ function splitIntoRows(naturalNodes) {
 
   // 章节标题尽量与紧随其后的内容行保持在同一页，避免标题孤悬页尾
   for (let i = 0; i < rows.length - 1; i++) {
-    if (rows[i].classList.contains('a4-row-section-title')) {
+    if (rows[i].classList.contains('page-separator-row-section-title')) {
       rows[i].dataset.keepWithNext = '1';
     }
   }
@@ -187,7 +187,7 @@ function splitIntoRows(naturalNodes) {
 function measureCumulativeHeights(rows, contentWidthMm) {
   const widthPx = mmToPx(contentWidthMm);
   const measurer = document.createElement('div');
-  measurer.className = 'a4-measurer';
+  measurer.className = 'page-separator-measurer';
   measurer.style.width = `${widthPx}px`;
   document.body.appendChild(measurer);
 
@@ -267,27 +267,27 @@ function distributeRowsIntoPages(rows, contentWidthMm, contentHeightMm) {
 
   // 项目边界若刚好跨页，换页本身已形成分隔；不要在新页顶部再留 32px。
   return pages.map(pageRows =>
-    pageRows[0]?.classList.contains('a4-row-project-separator')
+    pageRows[0]?.classList.contains('page-separator-row-project-separator')
       ? pageRows.slice(1)
       : pageRows
   );
 }
 
 /**
- * 根据视口宽度更新 A4 预览缩放比例。
+ * 根据视口宽度更新分页分隔线预览缩放比例。
  * 单页宽度 210mm，若视口不够则等比缩小；大屏保持 1:1。
  */
-function updateA4Scale() {
+function updatePageSeparatorScale() {
   const availableWidth = Math.max(320, window.innerWidth - 32); // 留 16px 边距
   const pageWidthPx = mmToPx(A4_WIDTH_MM);
   const scale = Math.min(1, availableWidth / pageWidthPx);
-  document.documentElement.style.setProperty('--a4-preview-scale', String(scale));
+  document.documentElement.style.setProperty('--page-separator-scale', String(scale));
 }
 
 /**
- * 渲染 A4 分页预览。
+ * 渲染分页分隔线预览。
  */
-function renderA4Pages(app, naturalNodes) {
+function renderSeparatedPages(app, naturalNodes) {
   const contentWidthMm = A4_WIDTH_MM - A4_MARGIN_MM * 2;
   const contentHeightMm = A4_HEIGHT_MM - A4_MARGIN_MM * 2;
 
@@ -299,23 +299,23 @@ function renderA4Pages(app, naturalNodes) {
 
   // 保留原始内容，打印时自动切回
   const originalContainer = document.createElement('div');
-  originalContainer.className = 'a4-original-content';
+  originalContainer.className = 'page-separator-original-content';
   naturalNodes.forEach(node => originalContainer.appendChild(node.cloneNode(true)));
   app.appendChild(originalContainer);
 
   pages.forEach((pageRows, index) => {
     const wrapper = document.createElement('div');
-    wrapper.className = 'a4-page-wrapper';
+    wrapper.className = 'page-separator-page-wrapper';
 
     const page = document.createElement('div');
-    page.className = 'a4-page';
+    page.className = 'page-separator-page';
 
     const content = document.createElement('div');
-    content.className = 'a4-page-content';
+    content.className = 'page-separator-page-content';
     pageRows.forEach(row => content.appendChild(row.cloneNode(true)));
 
     const pageNumber = document.createElement('span');
-    pageNumber.className = 'a4-page-number';
+    pageNumber.className = 'page-separator-page-number';
     pageNumber.textContent = `${index + 1} / ${pages.length}`;
 
     page.appendChild(content);
@@ -324,10 +324,10 @@ function renderA4Pages(app, naturalNodes) {
     app.appendChild(wrapper);
   });
 
-  updateA4Scale();
+  updatePageSeparatorScale();
 }
 
-export function getStoredA4Preview() {
+export function getStoredPageSeparators() {
   try {
     return localStorage.getItem(STORAGE_KEY) === '1';
   } catch {
@@ -335,28 +335,28 @@ export function getStoredA4Preview() {
   }
 }
 
-export function setA4Preview(enabled, forceRecapture = false) {
-  isEnabled = !!enabled;
+export function setPageSeparators(enabled, forceRecapture = false) {
+  showPageSeparators = !!enabled;
   const app = document.getElementById('app');
   if (!app) return;
 
-  if (isEnabled) {
-    // 始终以自然流 DOM 为源；若当前已是预览状态，.a4-original-content 里就是自然流副本
-    const naturalContainer = app.querySelector('.a4-original-content');
+  if (showPageSeparators) {
+    // 始终以自然流 DOM 为源；若当前已是预览状态，.page-separator-original-content 里就是自然流副本
+    const naturalContainer = app.querySelector('.page-separator-original-content');
     if (forceRecapture || !originalNodes || !naturalContainer) {
       originalNodes = naturalContainer
         ? Array.from(naturalContainer.childNodes).map(node => node.cloneNode(true))
         : cloneResumeNodes(app);
     }
 
-    document.documentElement.classList.add('a4-preview-mode');
-    document.body.classList.add('a4-preview-mode');
-    renderA4Pages(app, originalNodes);
+    document.documentElement.classList.add('page-separator-mode');
+    document.body.classList.add('page-separator-mode');
+    renderSeparatedPages(app, originalNodes);
   } else {
-    document.documentElement.classList.remove('a4-preview-mode');
-    document.body.classList.remove('a4-preview-mode');
-    app.querySelectorAll('.a4-page-wrapper').forEach(el => el.remove());
-    const originalContainer = app.querySelector('.a4-original-content');
+    document.documentElement.classList.remove('page-separator-mode');
+    document.body.classList.remove('page-separator-mode');
+    app.querySelectorAll('.page-separator-page-wrapper').forEach(el => el.remove());
+    const originalContainer = app.querySelector('.page-separator-original-content');
     if (originalContainer) originalContainer.remove();
     if (originalNodes) {
       app.innerHTML = '';
@@ -365,32 +365,32 @@ export function setA4Preview(enabled, forceRecapture = false) {
   }
 
   try {
-    localStorage.setItem(STORAGE_KEY, isEnabled ? '1' : '0');
+    localStorage.setItem(STORAGE_KEY, showPageSeparators ? '1' : '0');
   } catch {
     // ignore
   }
 }
 
 /**
- * 当 A4 模式已开启时，强制重新分页（用于间距/主题变化后）。
+ * 当分页分隔线已开启时，强制重新分页（用于间距或主题变化后）。
  */
-export function refreshA4Preview() {
-  if (!isEnabled) return;
+export function refreshPageSeparators() {
+  if (!showPageSeparators) return;
   const app = document.getElementById('app');
   if (!app) return;
   // 从当前保存的自然流副本重新捕获
   originalNodes = cloneResumeNodes(app);
   if (!originalNodes || originalNodes.length === 0) return;
-  renderA4Pages(app, originalNodes);
+  renderSeparatedPages(app, originalNodes);
 }
 
 /**
- * 初始化窗口 resize 监听，动态调整 A4 缩放。
+ * 初始化窗口 resize 监听，动态调整分页分隔线缩放。
  */
-export function initA4ResizeListener() {
+export function initPageSeparatorResizeListener() {
   if (resizeHandler) return;
   resizeHandler = () => {
-    if (isEnabled) updateA4Scale();
+    if (showPageSeparators) updatePageSeparatorScale();
   };
   window.addEventListener('resize', resizeHandler);
 }

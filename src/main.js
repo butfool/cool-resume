@@ -3,7 +3,7 @@ import { renderResume } from './renderer.js';
 import { initResumeEditor } from './resume-editor.js';
 import { createResumeStore } from './version-store.js';
 import { getInitialAppLocale, getSupportedAppLocales, i18nReady, setAppLocale } from './app-i18n.js';
-import { getStoredA4Preview, setA4Preview, initA4ResizeListener } from './a4-mode.js';
+import { getStoredPageSeparators, setPageSeparators, initPageSeparatorResizeListener } from './page-separator-mode.js';
 
 const STORAGE_KEY = 'myresume2-theme';
 
@@ -44,7 +44,7 @@ function renderApp(data, { forceRecapture = false, renderResumeFn = renderResume
   document.documentElement.lang = activeLocale;
   document.title = `${data.name} - ${data.title}`;
   document.getElementById('app').innerHTML = renderResumeFn(data, { locale: activeLocale });
-  setA4Preview(getStoredA4Preview(), forceRecapture);
+  setPageSeparators(getStoredPageSeparators(), forceRecapture);
 }
 
 renderApp(activeResumeData, { forceRecapture: true });
@@ -158,7 +158,7 @@ async function changeLocale(locale) {
 }
 
 createEditor();
-initA4ResizeListener();
+initPageSeparatorResizeListener();
 import('./dev-panel.js').then(module => {
   initDevPanel = module.initDevPanel;
   createPanel();

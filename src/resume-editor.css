@@ -45,7 +45,7 @@
 .resume-json-editor-button svg { width: 13px; height: 13px; }
 .resume-json-editor-hint { margin-top: 10px; color: #a8a29e; font-size: 10px; }
 html.resume-editor-split-mode body { max-width: none; padding-right: 0; padding-left: 0; }
-html.resume-editor-split-mode #app, html.resume-editor-split-mode.a4-preview-mode #app { width: calc(100% - var(--resume-json-editor-width, 390px)); margin-left: var(--resume-json-editor-width, 390px); }
+html.resume-editor-split-mode #app, html.resume-editor-split-mode.page-separator-mode #app { width: calc(100% - var(--resume-json-editor-width, 390px)); margin-left: var(--resume-json-editor-width, 390px); }
 html.resume-editor-is-resizing, html.resume-editor-is-resizing body { cursor: col-resize !important; user-select: none; }
 .resume-json-editor-resize-handle { position: absolute; top: 0; right: -4px; bottom: 0; width: 8px; cursor: col-resize; }
 .resume-json-editor-resize-handle::after { content: ''; position: absolute; top: 50%; right: 2px; width: 3px; height: 42px; border-radius: 99px; background: #d6d3d1; opacity: 0; transform: translateY(-50%); transition: opacity 150ms, background 150ms; }
@@ -55,7 +55,7 @@ html.resume-editor-is-resizing, html.resume-editor-is-resizing body { cursor: co
 }
 @media (max-width: 640px) {
   .resume-json-editor { width: 100%; }
-  html.resume-editor-split-mode #app, html.resume-editor-split-mode.a4-preview-mode #app { display: none; }
+  html.resume-editor-split-mode #app, html.resume-editor-split-mode.page-separator-mode #app { display: none; }
 }
 @media print { .resume-json-editor { display: none !important; } }
 @media (prefers-reduced-motion: reduce) { .resume-json-editor, .resume-json-editor-input, .resume-json-editor-button, .resume-json-editor-icon-button, .resume-json-editor-status { transition: none; } }
