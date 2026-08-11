@@ -63,7 +63,6 @@ export function initResumeEditor({ initialData, initialText, defaultData, onChan
       <button type="button" class="resume-json-editor-button" data-editor-action="upload"><i data-lucide="upload"></i>${t(locale, 'editor.upload')}</button>
       <button type="button" class="resume-json-editor-button" data-editor-action="download"><i data-lucide="download"></i>${t(locale, 'editor.download')}</button>
       <button type="button" class="resume-json-editor-button quiet" data-editor-action="reset"><i data-lucide="rotate-ccw"></i>${t(locale, 'editor.reset')}</button>
-      <a class="resume-json-editor-button" href="https://github.com/butfool/cool-resume" target="_blank" rel="noopener" aria-label="${t(locale, 'editor.repositoryAria')}"><i data-lucide="github"></i>${t(locale, 'editor.repository')}</a>
     </div>
     <div class="resume-json-editor-hint">${t(locale, 'editor.hint')}</div>
     <input type="file" class="resume-json-editor-file-input" accept="application/json,.json" hidden />

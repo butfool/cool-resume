@@ -32,6 +32,21 @@ body:not(.page-separator-mode), body.page-separator-mode #app { transition: padd
 .resume-editor-toolbar-button.primary { border-color: #292524; background: #292524; color: #fff; box-shadow: 0 2px 5px rgba(41,37,36,.16); }
 .resume-editor-toolbar-button.primary:hover { background: #44403c; }
 .resume-editor-toolbar-button.quiet { color: #78716c; }
+.resume-editor-toolbar-repository {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #57534e;
+  text-decoration: none;
+  transition: border-color 150ms, background-color 150ms, color 150ms, box-shadow 150ms;
+}
+.resume-editor-toolbar-repository svg { width: 16px; height: 16px; stroke-width: 1.8; }
+.resume-editor-toolbar-repository:hover { border-color: #d6d3d1; background: #f5f4f2; color: #292524; }
+.resume-editor-toolbar-repository:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
 .resume-editor-toggle { padding: 0 8px; border: 1px solid transparent; border-radius: 8px; background: transparent; cursor: pointer; }
 .resume-editor-toggle:hover { border-color: #d6d3d1; background: #f5f4f2; }
 .resume-editor-toggle input { accent-color: #2563eb; }

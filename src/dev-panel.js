@@ -166,6 +166,7 @@ export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThe
         <button type="button" class="resume-editor-toolbar-button" data-action="reset-theme" title="${t(locale, 'app.reset')}"><i data-lucide="rotate-ccw"></i><span>${t(locale, 'app.reset')}</span></button>
         <button type="button" class="resume-editor-toolbar-button primary" data-action="export" title="${t(locale, 'export.title')}"><i data-lucide="file-down"></i><span>${t(locale, 'app.export')}</span></button>
         <button type="button" class="resume-editor-toolbar-button quiet" data-action="hide" title="${t(locale, 'app.hide')}"><i data-lucide="eye-off"></i><span>${t(locale, 'app.hide')}</span></button>
+        <a class="resume-editor-toolbar-repository" href="https://github.com/butfool/cool-resume" target="_blank" rel="noopener" aria-label="${t(locale, 'editor.repositoryAria')}" title="${t(locale, 'editor.repository')}"><i data-lucide="github"></i></a>
       </div>
     </div>
     <div class="resume-editor-toolbar-drawer" aria-hidden="true">
