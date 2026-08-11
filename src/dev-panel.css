@@ -47,6 +47,10 @@ body:not(.page-separator-mode), body.page-separator-mode #app { transition: padd
 .resume-editor-toolbar-drawer-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
 .resume-editor-toolbar-drawer-header strong { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
 .resume-editor-toolbar-drawer-header span { color: #8a8580; font-size: 12px; }
+.resume-editor-layout-option { display: flex; align-items: center; justify-content: space-between; height: 32px; margin-bottom: 13px; padding: 0 9px; border: 1px solid #e7e5e4; border-radius: 6px; color: #57534e; font-size: 12px; font-weight: 600; cursor: pointer; }
+.resume-editor-layout-option:hover { border-color: #d6d3d1; background: #fafaf9; }
+.resume-editor-layout-option input { width: 15px; height: 15px; margin: 0; accent-color: #2563eb; }
+.resume-editor-layout-option input:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
 .resume-editor-spacing-grid { display: grid; grid-template-columns: 1fr; gap: 13px; margin-bottom: 14px; }
 .resume-editor-spacing-item { display: grid; grid-template-columns: 1fr auto; gap: 7px 8px; align-items: center; color: #57534e; font-size: 12px; font-weight: 600; }
 .resume-editor-spacing-item output { color: #78716c; font-family: var(--font-mono); font-size: 11px; font-weight: 400; }

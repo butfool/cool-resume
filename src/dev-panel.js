@@ -159,7 +159,6 @@ export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThe
           ${THEMES.map(theme => `<option value="${theme.id}" ${theme.id === currentTheme ? 'selected' : ''}>${locale === 'en-US' ? theme.en : theme.label}</option>`).join('')}
         </select></label>
         ${locales.length ? `<label class="resume-editor-control" title="${t(locale, 'app.language')}"><select class="resume-editor-locale-select" aria-label="${t(locale, 'app.language')}">${locales.map(item => `<option value="${item.code}" ${item.code === locale ? 'selected' : ''}>${item.label}</option>`).join('')}</select></label>` : ''}
-        <label class="resume-editor-toggle" title="${t(locale, 'app.pageSeparatorsTitle')}"><input type="checkbox" class="resume-editor-page-separator-toggle" /><span>${t(locale, 'app.pageSeparators')}</span></label>
         <span class="resume-editor-toolbar-divider"></span>
         <button type="button" class="resume-editor-toolbar-button" data-action="spacing" aria-expanded="false" title="${t(locale, 'app.spacingTitle')}"><i data-lucide="sliders-horizontal"></i><span>${t(locale, 'app.spacing')}</span></button>
         <button type="button" class="resume-editor-toolbar-button" data-action="reset-theme" title="${t(locale, 'app.reset')}"><i data-lucide="rotate-ccw"></i><span>${t(locale, 'app.reset')}</span></button>
@@ -169,6 +168,7 @@ export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThe
     </div>
     <div class="resume-editor-toolbar-drawer" aria-hidden="true">
       <div class="resume-editor-toolbar-drawer-header"><strong><i data-lucide="sliders-horizontal"></i>${t(locale, 'app.spacingTitle')}</strong><span>${t(locale, 'app.spacingHint')}</span></div>
+      <label class="resume-editor-layout-option" title="${t(locale, 'app.pageSeparatorsTitle')}"><span>${t(locale, 'app.pageSeparators')}</span><input type="checkbox" class="resume-editor-page-separator-toggle" /></label>
       <div class="resume-editor-spacing-grid">
         ${SPACING_CONTROLS.map(control => `<label class="resume-editor-spacing-item"><span>${locale === 'en-US' ? control.en : control.label}</span><output data-key="${control.key}"></output><input type="range" data-key="${control.key}" min="${control.min}" max="${control.max}" step="${control.step}" value="${SPACING_DEFAULTS[control.key]}" /></label>`).join('')}
       </div>
