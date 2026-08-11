@@ -1,0 +1,18 @@
+# Private resume data and generated exports
+node_modules/
+dist/
+output/
+data/
+resume.json
+resume.local.json
+
+# Local-only tooling and agent configuration
+.agents/
+.claude/
+.specify/
+.spectatui.toml
+AGENTS.md
+CLAUDE.md
+design-qa.md
+tmp/
+.DS_Store
