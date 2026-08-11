@@ -364,7 +364,7 @@ format_speckit_command() {
     command_name="${command_name#speckit-}"
     command_name="${command_name//./$separator}"
 
-    printf '/speckit%s%s\n' "$separator" "$command_name"
+    printf '$speckit%s%s\n' "$separator" "$command_name"
 }
 
 # Escape a string for safe embedding in a JSON value (fallback when jq is unavailable).

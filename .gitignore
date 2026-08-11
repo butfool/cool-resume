@@ -1,8 +1,14 @@
 node_modules/
 dist/
 output/
+*.log
+.env*
 .DS_Store
 CLAUDE.md
+.claude/
+.codex/
+.specify/
+specs/
 design-qa.md
 
 # The real resume and generated exports are private; publish data-example/.

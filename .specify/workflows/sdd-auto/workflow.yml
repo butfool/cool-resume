@@ -15,7 +15,7 @@ workflow:
 requires:
   speckit_version: ">=0.8.5"
   integrations:
-    any: ["claude"]
+    any: ["claude", "codex"]
 
 inputs:
   feature_dir:
