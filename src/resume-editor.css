@@ -37,7 +37,7 @@
 .resume-json-editor-input .cm-diagnostic-error { border-bottom: 2px wavy #f87171; }
 .resume-json-editor-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.14), inset 0 1px 3px rgba(0,0,0,.18); }
 .resume-json-editor-actions { display: flex; flex-wrap: wrap; gap: 6px; }
-.resume-json-editor-button { display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 9px; border: 1px solid #dedbd7; border-radius: 7px; background: #fff; color: #57534e; font: 600 11px var(--font-sans); cursor: pointer; transition: background 150ms, border-color 150ms, transform 150ms; }
+.resume-json-editor-button { display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 9px; border: 1px solid #dedbd7; border-radius: 7px; background: #fff; color: #57534e; font: 600 11px var(--font-sans); text-decoration: none; cursor: pointer; transition: background 150ms, border-color 150ms, transform 150ms; }
 .resume-json-editor-button:hover { border-color: #a8a29e; background: #f5f4f2; }
 .resume-json-editor-button:active { transform: translateY(1px) scale(.98); }
 .resume-json-editor-button.primary { border-color: #292524; background: #292524; color: #fff; }
