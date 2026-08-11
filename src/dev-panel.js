@@ -132,6 +132,8 @@ function setToolbarVisibility(visible) {
 /** 顶部编辑栏：承接主题、排版、分页分隔线和导出控制。 */
 export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThemeChange, onEditorToggle, locale = 'zh-CN', locales = [], onLocaleChange, catalog, activeVersion, onVersionChange, onVersionCreate, onVersionCopy, onVersionRename, onVersionDelete, onVersionMove }) {
   const root = document.documentElement;
+  let toolbarOffsetFrame = null;
+  let toolbarResizeObserver = null;
   SPACING_DEFAULTS = Object.fromEntries(SPACING_CONTROLS.map(({ key }) => {
     if (defaultSpacing[key] !== undefined) return [key, String(defaultSpacing[key])];
     const fallback = getComputedStyle(root).getPropertyValue(`--${key}`).trim();
@@ -285,9 +287,11 @@ export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThe
     updateToolbarOffset();
   }
   function updateToolbarOffset() {
-    requestAnimationFrame(() => {
+    if (toolbarOffsetFrame !== null) return;
+    toolbarOffsetFrame = requestAnimationFrame(() => {
+      toolbarOffsetFrame = null;
       const offset = toolbar.classList.contains('is-hidden') ? 0 : toolbar.offsetHeight;
-      document.documentElement.style.setProperty('--resume-editor-toolbar-offset', `${offset}px`);
+      root.style.setProperty('--resume-editor-toolbar-offset', `${offset}px`);
     });
   }
   function updateVisibility(visible) {
@@ -504,6 +508,8 @@ export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThe
   };
   document.addEventListener('keydown', handleToolbarShortcut);
   document.body.prepend(toolbar);
+  toolbarResizeObserver = new ResizeObserver(updateToolbarOffset);
+  toolbarResizeObserver.observe(toolbar);
   document.body.appendChild(restoreButton);
   document.body.appendChild(versionDialog);
   document.body.appendChild(imageDialog);
@@ -511,6 +517,8 @@ export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThe
   updateVisibility(getToolbarVisibility());
   return {
     destroy: () => {
+      toolbarResizeObserver?.disconnect();
+      if (toolbarOffsetFrame !== null) cancelAnimationFrame(toolbarOffsetFrame);
       window.removeEventListener('resume-editor-toggle', handleEditorToggle);
       document.removeEventListener('pointerdown', handleVersionOutsideClick);
       document.removeEventListener('keydown', handleVersionEscape);

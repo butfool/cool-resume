@@ -11,7 +11,7 @@
 .resume-editor-toolbar[hidden] { display: none; }
 .resume-editor-toolbar.is-hidden { opacity: 0; transform: translateY(-100%); pointer-events: none; }
 .resume-editor-toolbar-visible body:not(.page-separator-mode) { padding-top: var(--resume-editor-toolbar-offset, 66px); }
-.resume-editor-toolbar-visible body.page-separator-mode #app { padding-top: var(--resume-editor-toolbar-offset, 66px); }
+.resume-editor-toolbar-visible body.page-separator-mode #app { padding-top: calc(var(--resume-editor-toolbar-offset, 66px) + 8px); transition: none; }
 body:not(.page-separator-mode), body.page-separator-mode #app { transition: padding-top 220ms cubic-bezier(.2,.8,.2,1); }
 .resume-editor-toolbar-main { display: flex; min-height: 50px; align-items: center; justify-content: space-between; gap: 18px; max-width: 1440px; margin: 0 auto; padding: 7px 20px; }
 .resume-editor-toolbar-brand { display: inline-flex; align-items: center; gap: 9px; flex: 0 0 auto; font-size: 14px; font-weight: 700; letter-spacing: -.02em; }
@@ -76,7 +76,7 @@ body:not(.page-separator-mode), body.page-separator-mode #app { transition: padd
   .resume-editor-toolbar-controls { justify-content: flex-start; flex-wrap: wrap; }
   .resume-editor-spacing-grid { grid-template-columns: 1fr; }
   .resume-editor-toolbar-visible body:not(.page-separator-mode) { padding-top: var(--resume-editor-toolbar-offset, 140px); }
-  .resume-editor-toolbar-visible body.page-separator-mode #app { padding-top: var(--resume-editor-toolbar-offset, 140px); }
+  .resume-editor-toolbar-visible body.page-separator-mode #app { padding-top: calc(var(--resume-editor-toolbar-offset, 140px) + 8px); }
 }
 @media (max-width: 540px) {
   .resume-editor-toolbar-main { padding-right: 14px; padding-left: 14px; }
@@ -86,7 +86,7 @@ body:not(.page-separator-mode), body.page-separator-mode #app { transition: padd
   .resume-editor-spacing-grid { grid-template-columns: 1fr; }
   .resume-editor-toolbar-drawer-header { align-items: flex-start; flex-direction: column; gap: 4px; }
   .resume-editor-toolbar-visible body:not(.page-separator-mode) { padding-top: var(--resume-editor-toolbar-offset, 154px); }
-  .resume-editor-toolbar-visible body.page-separator-mode #app { padding-top: var(--resume-editor-toolbar-offset, 154px); }
+  .resume-editor-toolbar-visible body.page-separator-mode #app { padding-top: calc(var(--resume-editor-toolbar-offset, 154px) + 8px); }
 }
 @media print { .resume-editor-toolbar, .resume-editor-toolbar-restore { display: none !important; } }
 

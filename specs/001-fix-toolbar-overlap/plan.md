@@ -1,113 +1,71 @@
-# Implementation Plan: [FEATURE]
+# Implementation Plan: Prevent Toolbar Overlap
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+**Branch**: `main` (workflow feature identifier: `001-fix-toolbar-overlap`) | **Date**: 2026-08-11 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
-
-**Note**: This template is filled in by the `/speckit-plan` command; its definition describes the execution workflow.
+**Input**: Feature specification from `specs/001-fix-toolbar-overlap/spec.md`
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+Keep the page-separated resume preview clear of the fixed editor toolbar by synchronizing its top clearance to the toolbar's actual rendered height. Preserve the page-separation DOM, preference storage, resume data, print path, and image/PDF exports. Include a small visual buffer beneath the toolbar and eliminate any transition that briefly places the first page under it.
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
+**Language/Version**: JavaScript ES modules; Node.js `^20.19.0 || >=22.12.0`
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]
+**Primary Dependencies**: Vite, Lucide, CodeMirror, SortableJS, i18next; browser-native element-size observation
 
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
+**Storage**: Existing browser local storage and IndexedDB; no schema change
 
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+**Testing**: No automated test suite; browser visual checks, `npm run build`, and `npm run pdf` when Chrome is available
 
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]
+**Target Platform**: Modern desktop and narrow-screen browsers; A4 print preview and PDF export on macOS Chrome
 
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Project Type**: Client-side Vite web application
 
-**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]
+**Performance Goals**: Publish current clearance on the next rendered frame after a toolbar height change; do not re-paginate solely for toolbar clearance
 
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
+**Constraints**: Keep the toolbar fixed; retain the local-first boundary; do not alter A4 dimensions, the pagination algorithm, preference semantics, or export content
 
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]
-
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Scale/Scope**: One toolbar, one separated-preview container, and two responsive toolbar breakpoints; no new data or external interfaces
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+*GATE: Passed before Phase 0 research. Re-checked after Phase 1 design: passed.*
 
-[Gates determined based on constitution file]
+- **Privacy-first publication**: Pass. No resume data is read, written, transmitted, or published.
+- **Valid data and safe rendering**: Pass. Resume JSON, renderer output, import/export, and version behavior remain unchanged.
+- **A4 output is a product contract**: Pass with mandatory runtime validation of separated preview, production build, and PDF when Chrome is available.
+- **Small, direct client-side design**: Pass. Extend the existing toolbar-offset CSS-variable mechanism; add no dependency, service, compatibility layer, or paging rewrite.
+- **Documentation and scoped change control**: Pass. Review README preview wording and update it if the behavior description needs clarification.
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/[###-feature]/
-├── plan.md              # This file (/speckit-plan command output)
-├── research.md          # Phase 0 output (/speckit-plan command)
-├── data-model.md        # Phase 1 output (/speckit-plan command)
-├── quickstart.md        # Phase 1 output (/speckit-plan command)
-├── contracts/           # Phase 1 output (/speckit-plan command)
-└── tasks.md             # Phase 2 output (/speckit-tasks command - NOT created by /speckit-plan)
+specs/001-fix-toolbar-overlap/
+├── plan.md
+├── research.md
+├── data-model.md
+├── quickstart.md
+├── contracts/
+│   └── preview-layout.md
+└── tasks.md                 # Created by /speckit-tasks
 ```
 
 ### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
 src/
-├── models/
-├── services/
-├── cli/
-└── lib/
+├── main.js                    # Renders active resume and applies separator mode
+├── dev-panel.js               # Fixed toolbar lifecycle and clearance synchronization
+├── dev-panel.css              # Toolbar layout and preview-clearance styles
+├── page-separator-mode.js     # A4 page DOM construction and width scaling
+├── style.css                  # Resume and separated-page canvas layout
+└── resume-editor.{js,css}     # Optional JSON split editor and canvas placement
 
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+README.md                      # Preview/export behavior documentation
+scripts/export-pdf.js          # Existing A4 export validation path
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
-
-## Complexity Tracking
-
-> **Fill ONLY if Constitution Check has violations that must be justified**
-
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+**Structure Decision**: Keep the fix in the existing toolbar module and stylesheet. The page-separation module remains responsible for A4 page construction and width scaling, not toolbar lifecycle.
