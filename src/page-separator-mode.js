@@ -27,6 +27,7 @@ const STORAGE_KEY = 'myresume2-page-separators';
 let originalNodes = null;
 let showPageSeparators = false;
 let resizeHandler = null;
+let fontRefreshQueued = false;
 
 function mmToPx(mm) {
   // 标准 96 DPI：1 inch = 25.4mm = 96px
@@ -371,6 +372,17 @@ function renderSeparatedPages(app, naturalNodes) {
   updatePageSeparatorScale();
 }
 
+function refreshAfterFontsAreReady() {
+  if (fontRefreshQueued || !document.fonts?.ready) return;
+  fontRefreshQueued = true;
+  document.fonts.ready.then(() => {
+    fontRefreshQueued = false;
+    if (showPageSeparators) refreshPageSeparators();
+  }).catch(() => {
+    fontRefreshQueued = false;
+  });
+}
+
 export function getStoredPageSeparators() {
   try {
     return localStorage.getItem(STORAGE_KEY) === '1';
@@ -396,6 +408,9 @@ export function setPageSeparators(enabled, forceRecapture = false) {
     document.documentElement.classList.add('page-separator-mode');
     document.body.classList.add('page-separator-mode');
     renderSeparatedPages(app, originalNodes);
+    // Initial rendering can happen before the browser has finalized font
+    // metrics. Re-measure once they are ready so a refresh matches an edit.
+    refreshAfterFontsAreReady();
   } else {
     document.documentElement.classList.remove('page-separator-mode');
     document.body.classList.remove('page-separator-mode');

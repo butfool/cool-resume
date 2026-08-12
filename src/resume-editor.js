@@ -172,11 +172,16 @@ export function initResumeEditor({ initialData, initialText, defaultData, onChan
     if (await applyInput()) setStatus(t(locale, 'editor.imported', { file: file.name }), 'ok');
     fileInput.value = '';
   });
-  editor.querySelector('[data-editor-action="reset"]').addEventListener('click', () => {
+  editor.querySelector('[data-editor-action="reset"]').addEventListener('click', async () => {
     currentData = clone(defaultData);
     writeInput(currentData);
     onChange(clone(currentData));
-    onSave?.(clone(currentData)).then?.(() => setStatus(t(locale, 'editor.resetDone'), 'ok')).catch?.(error => setStatus(t(locale, 'editor.dataError', { message: error.message }), 'error'));
+    try {
+      await onSave?.(clone(currentData));
+      setStatus(t(locale, 'editor.resetDone'), 'ok');
+    } catch (error) {
+      setStatus(t(locale, 'editor.dataError', { message: error.message }), 'error');
+    }
   });
 
   let isOpen = false;

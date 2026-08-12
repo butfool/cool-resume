@@ -13,6 +13,17 @@ const resumeStore = await createResumeStore().init();
 const initialVersion = await resumeStore.getActive();
 const DEFAULT_THEME = initialVersion.data.theme || 'minimal';
 
+function getExampleData(versionId, fallbackData) {
+  try {
+    return resumeStore.getBundledVersion(versionId);
+  } catch {
+    // User-created versions have no bundled source. Keep their creation data as
+    // the only available reset target instead of silently replacing it with a
+    // different version's example.
+    return fallbackData;
+  }
+}
+
 function getInitialTheme() {
   try { return localStorage.getItem(STORAGE_KEY) || DEFAULT_THEME; } catch { return DEFAULT_THEME; }
 }
@@ -37,6 +48,7 @@ function applySpacing(spacing) {
 
 let activeVersion = { versionId: initialVersion.versionId };
 let activeResumeData = initialVersion.data;
+let activeExampleData = getExampleData(activeVersion.versionId, activeResumeData);
 let activeLocale = getInitialAppLocale();
 applySpacing(activeResumeData?.style?.spacing);
 
@@ -57,7 +69,7 @@ let initDevPanel;
 function createEditor(wasOpen = false) {
   editorController = initResumeEditor({
     initialData: activeResumeData,
-    defaultData: activeResumeData,
+    defaultData: activeExampleData,
     locale: activeLocale,
     onChange: data => {
       activeResumeData = data;
@@ -96,6 +108,7 @@ async function changeVersion(nextActive) {
   const result = await resumeStore.setActive(nextActive.versionId);
   activeVersion = { versionId: result.versionId };
   activeResumeData = result.data;
+  activeExampleData = getExampleData(activeVersion.versionId, activeResumeData);
   editorController?.destroy();
   panelController?.destroy();
   setTheme(activeResumeData.theme || DEFAULT_THEME);
@@ -108,6 +121,7 @@ async function reloadAfterVersionMutation(versionId, wasOpen) {
   const result = await resumeStore.setActive(versionId);
   activeVersion = { versionId: result.versionId };
   activeResumeData = result.data;
+  activeExampleData = getExampleData(activeVersion.versionId, activeResumeData);
   editorController?.destroy();
   panelController?.destroy();
   setTheme(activeResumeData.theme || DEFAULT_THEME);

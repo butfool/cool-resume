@@ -175,6 +175,7 @@ export function createResumeStore() {
       return { versionId, data: await getVersion(versionId) };
     },
     getVersion,
+    getBundledVersion: versionId => getBundledVersion(versionId).data,
     setActive,
     async moveVersion(versionId, targetId, placement) {
       findEntry(versionId);

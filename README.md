@@ -36,4 +36,4 @@
 
 ## Privacy boundary
 
-公开仓库只包含 `data-example/` 虚构模板。真实 `data/`、`output/` 中的构建产物、历史材料、个人附件和本地工具文件不应提交。静态版的编辑内容保存在当前浏览器的 IndexedDB/localStorage 中；项目目前不会将简历数据上传到外部服务。
+公开仓库只包含 `data-example/` 虚构模板。真实 `data/`、`output/` 中的构建产物、历史材料、个人附件和本地工具文件不应提交。静态版的编辑内容保存在当前浏览器的 IndexedDB/localStorage 中；项目目前不会将简历数据上传到外部服务。JSON 编辑器的“恢复示例”会用当前内置版本的 `data-example` 覆盖该版本的本地草稿。
