@@ -5,7 +5,7 @@
 [![Built with Vite](https://img.shields.io/badge/Built%20with-Vite%208-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-3DA639?logo=opensourceinitiative&logoColor=white)](LICENSE)
 
-一个便利 AI，基于 JSON 数据源、本地优先的通用简历生成器。可以本地/在线编辑、预览和导出简历。
+一个 AI 友好，基于 JSON 数据源、本地优先的通用简历生成器。可以本地/在线编辑、预览和导出简历。
 
 ![Resume Generator demo](docs/images/demo.jpeg)
 
