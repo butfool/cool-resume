@@ -18,6 +18,10 @@
 const A4_WIDTH_MM = 210;
 const A4_HEIGHT_MM = 297;
 const A4_MARGIN_MM = 14;
+// The separated-preview and A4 PDF contract is 210 x 297mm with a 14mm safe
+// margin on every edge, leaving 182 x 269mm for normal page content.
+const PAGE_CONTENT_WIDTH_MM = A4_WIDTH_MM - A4_MARGIN_MM * 2;
+const PAGE_CONTENT_HEIGHT_MM = A4_HEIGHT_MM - A4_MARGIN_MM * 2;
 const STORAGE_KEY = 'myresume2-page-separators';
 
 let originalNodes = null;
@@ -181,24 +185,31 @@ function splitIntoRows(naturalNodes) {
 }
 
 /**
- * 在屏幕外测量每个行单位按顺序加入后的累积高度。
- * 返回的 cumulativeHeights[i] 表示前 i+1 个行在 A4 内容区里的总高度。
+ * 在与已渲染页面相同的内容区上下文中测量候选行。
+ * 页面首尾行的 margin 规则由 .page-separator-page-content 共同生效，避免
+ * 从全局累计高度中减去不属于当前页面的间距。
  */
-function measureCumulativeHeights(rows, contentWidthMm) {
+function createPageContentMeasurer(contentWidthMm) {
   const widthPx = mmToPx(contentWidthMm);
   const measurer = document.createElement('div');
   measurer.className = 'page-separator-measurer';
   measurer.style.width = `${widthPx}px`;
+
+  const content = document.createElement('div');
+  content.className = 'page-separator-page-content';
+  measurer.appendChild(content);
   document.body.appendChild(measurer);
 
-  const cumulativeHeights = [];
-  rows.forEach(row => {
-    measurer.appendChild(row.cloneNode(true));
-    cumulativeHeights.push(measurer.scrollHeight);
-  });
+  return { measurer, content };
+}
+
+function measureCandidatePageContent(rows, contentWidthMm) {
+  const { measurer, content } = createPageContentMeasurer(contentWidthMm);
+  rows.forEach(row => content.appendChild(row.cloneNode(true)));
+  const height = content.scrollHeight;
 
   document.body.removeChild(measurer);
-  return cumulativeHeights;
+  return height;
 }
 
 /**
@@ -209,68 +220,82 @@ function distributeRowsIntoPages(rows, contentWidthMm, contentHeightMm) {
   if (rows.length === 0) return [];
 
   const pageHeightPx = mmToPx(contentHeightMm);
-  const cumulativeHeights = measureCumulativeHeights(rows, contentWidthMm);
   const pages = [];
-  let pageStart = 0;
+  let currentPage = [];
+  let pendingKeepWithNext = null;
 
-  function heightOf(start, end) {
-    // [start, end)
-    return cumulativeHeights[end - 1] - (start > 0 ? cumulativeHeights[start - 1] : 0);
+  function commitCurrentPage() {
+    if (currentPage.length > 0) pages.push(currentPage);
+    currentPage = [];
   }
 
-  let i = 0;
-  while (i < rows.length) {
-    let desiredEnd = i + 1;
-    const shouldGroup =
-      rows[i].dataset.keepWithNext === '1' && i + 1 < rows.length;
+  rows.forEach(row => {
+    if (row.dataset.keepWithNext === '1') {
+      pendingKeepWithNext = row;
+      return;
+    }
 
-    if (shouldGroup) {
-      const freshGroupHeight = cumulativeHeights[i + 1] - (i > 0 ? cumulativeHeights[i - 1] : 0);
-      if (freshGroupHeight <= pageHeightPx) {
-        desiredEnd = i + 2;
+    let candidateRows = pendingKeepWithNext ? [pendingKeepWithNext, row] : [row];
+    while (candidateRows.length > 0) {
+      const candidatePage = [...currentPage, ...candidateRows];
+      const fits = measureCandidatePageContent(candidatePage, contentWidthMm) <= pageHeightPx;
+      if (fits) {
+        currentPage = candidatePage;
+        pendingKeepWithNext = null;
+        break;
       }
-    }
 
-    const projectedHeight = heightOf(pageStart, desiredEnd);
-
-    if (projectedHeight <= pageHeightPx) {
-      i = desiredEnd;
-      continue;
-    }
-
-    // 当前页放不下，先结束当前页
-    if (i > pageStart) {
-      pages.push(rows.slice(pageStart, i));
-      pageStart = i;
-      continue;
-    }
-
-    // 已经在新页开头仍放不下
-    if (desiredEnd === i + 2) {
-      // 标题 + 下一行整体放不下，尝试只放标题
-      const singleHeight = cumulativeHeights[i] - (i > 0 ? cumulativeHeights[i - 1] : 0);
-      if (singleHeight <= pageHeightPx) {
-        i = i + 1;
+      if (currentPage.length > 0) {
+        const pendingIsProjectSeparator = pendingKeepWithNext?.classList.contains(
+          'page-separator-row-project-separator'
+        );
+        commitCurrentPage();
+        if (pendingIsProjectSeparator) {
+          // A project separator only describes an on-page relationship. Drop it
+          // before starting the next project on a fresh page so it reserves no height.
+          pendingKeepWithNext = null;
+          candidateRows = [row];
+        }
         continue;
       }
+
+      if (pendingKeepWithNext?.classList.contains('page-separator-row-project-separator')) {
+        pendingKeepWithNext = null;
+        candidateRows = [row];
+        continue;
+      }
+
+      if (pendingKeepWithNext) {
+        // Keep a title with its first row whenever that pair fits. If the pair
+        // itself is too tall, retain the title and retry the following row alone.
+        currentPage = [pendingKeepWithNext];
+        pendingKeepWithNext = null;
+        candidateRows = [row];
+        continue;
+      }
+
+      // A single exceptional row exceeds the safe content height. Keep it in a
+      // dedicated page rather than dropping or duplicating it.
+      currentPage = candidateRows;
+      commitCurrentPage();
+      break;
     }
+  });
 
-    // 单行就超过一页高度，强制独占一页（允许溢出）
-    pages.push(rows.slice(i, desiredEnd));
-    pageStart = desiredEnd;
-    i = desiredEnd;
+  if (pendingKeepWithNext) {
+    if (pendingKeepWithNext.classList.contains('page-separator-row-project-separator')) {
+      pendingKeepWithNext = null;
+    } else {
+      const candidatePage = [...currentPage, pendingKeepWithNext];
+      if (measureCandidatePageContent(candidatePage, contentWidthMm) > pageHeightPx && currentPage.length > 0) {
+        commitCurrentPage();
+      }
+      currentPage.push(pendingKeepWithNext);
+    }
   }
+  commitCurrentPage();
 
-  if (pageStart < rows.length) {
-    pages.push(rows.slice(pageStart));
-  }
-
-  // 项目边界若刚好跨页，换页本身已形成分隔；不要在新页顶部再留 32px。
-  return pages.map(pageRows =>
-    pageRows[0]?.classList.contains('page-separator-row-project-separator')
-      ? pageRows.slice(1)
-      : pageRows
-  );
+  return pages;
 }
 
 /**
@@ -288,11 +313,8 @@ function updatePageSeparatorScale() {
  * 渲染分页分隔线预览。
  */
 function renderSeparatedPages(app, naturalNodes) {
-  const contentWidthMm = A4_WIDTH_MM - A4_MARGIN_MM * 2;
-  const contentHeightMm = A4_HEIGHT_MM - A4_MARGIN_MM * 2;
-
   const rows = splitIntoRows(naturalNodes);
-  const pages = distributeRowsIntoPages(rows, contentWidthMm, contentHeightMm);
+  const pages = distributeRowsIntoPages(rows, PAGE_CONTENT_WIDTH_MM, PAGE_CONTENT_HEIGHT_MM);
 
   // 清空 #app，随后放入原始内容（打印用）与分页预览容器
   app.innerHTML = '';
@@ -306,6 +328,16 @@ function renderSeparatedPages(app, naturalNodes) {
   pages.forEach((pageRows, index) => {
     const wrapper = document.createElement('div');
     wrapper.className = 'page-separator-page-wrapper';
+
+    const contentHeightPx = measureCandidatePageContent(pageRows, PAGE_CONTENT_WIDTH_MM);
+    const safeContentHeightPx = mmToPx(PAGE_CONTENT_HEIGHT_MM);
+    if (contentHeightPx > safeContentHeightPx) {
+      // An exceptional one-row page cannot fit on A4. Grow only the preview
+      // wrapper so every line remains inspectable instead of being clipped.
+      const expandedPageHeightPx = contentHeightPx + mmToPx(A4_MARGIN_MM * 2);
+      wrapper.style.setProperty('--page-separator-page-height', `${expandedPageHeightPx}px`);
+      wrapper.classList.add('page-separator-page-wrapper-oversized');
+    }
 
     const page = document.createElement('div');
     page.className = 'page-separator-page';

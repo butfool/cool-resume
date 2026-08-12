@@ -425,6 +425,8 @@ a:hover { border-bottom-color: var(--theme-link-hover-border); }
 
   html.page-separator-mode .page-separator-page {
     transform: none !important;
+    height: 297mm !important;
+    overflow: hidden !important;
   }
 
   html.page-separator-mode .page-separator-page-number {
@@ -474,7 +476,7 @@ a:hover { border-bottom-color: var(--theme-link-hover-border); }
   --page-separator-scale: 1;
 }
 
-/* 屏幕外测量容器：与页面内容区等宽，不参与布局。 */
+/* 屏幕外测量容器：内层复用可见页内容区，首尾行边距规则也一并生效。 */
 .page-separator-measurer {
   position: absolute;
   left: -9999px;
@@ -484,6 +486,10 @@ a:hover { border-bottom-color: var(--theme-link-hover-border); }
   max-width: none !important;
   padding: 0 !important;
   margin: 0 !important;
+}
+
+.page-separator-measurer .page-separator-page-content {
+  width: 100%;
 }
 
 html.page-separator-mode,
@@ -511,7 +517,7 @@ body.page-separator-mode {
 
 .page-separator-page-wrapper {
   width: calc(var(--resume-canvas-width) * var(--page-separator-scale));
-  height: calc(297mm * var(--page-separator-scale));
+  height: calc(var(--page-separator-page-height, 297mm) * var(--page-separator-scale));
   position: relative;
   flex-shrink: 0;
   border-radius: 2px;
@@ -523,7 +529,7 @@ body.page-separator-mode {
 
 .page-separator-page {
   width: var(--resume-canvas-width);
-  height: 297mm;
+  height: var(--page-separator-page-height, 297mm);
   padding: var(--resume-canvas-padding-x);
   background: #ffffff;
   overflow: hidden;
