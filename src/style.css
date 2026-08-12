@@ -476,20 +476,22 @@ a:hover { border-bottom-color: var(--theme-link-hover-border); }
   --page-separator-scale: 1;
 }
 
-/* 屏幕外测量容器：内层复用可见页内容区，首尾行边距规则也一并生效。 */
+/* 屏幕外测量容器：复用完整 A4 页框，直接测量最后一行相对纸张底部的位置。 */
 .page-separator-measurer {
   position: absolute;
   left: -9999px;
   top: 0;
   visibility: hidden;
   pointer-events: none;
+  width: var(--resume-canvas-width);
   max-width: none !important;
   padding: 0 !important;
   margin: 0 !important;
 }
 
-.page-separator-measurer .page-separator-page-content {
-  width: 100%;
+.page-separator-measurer .page-separator-page {
+  position: relative;
+  transform: none;
 }
 
 html.page-separator-mode,

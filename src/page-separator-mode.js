@@ -185,41 +185,54 @@ function splitIntoRows(naturalNodes) {
 }
 
 /**
- * 在与已渲染页面相同的内容区上下文中测量候选行。
- * 页面首尾行的 margin 规则由 .page-separator-page-content 共同生效，避免
- * 从全局累计高度中减去不属于当前页面的间距。
+ * 在完整 A4 页框中测量候选行。只有最后一行的实际下缘仍位于纸张底部
+ * 14mm 安全边距之上时，该候选页才允许继续容纳内容。
  */
-function createPageContentMeasurer(contentWidthMm) {
-  const widthPx = mmToPx(contentWidthMm);
+function createPageContentMeasurer() {
   const measurer = document.createElement('div');
   measurer.className = 'page-separator-measurer';
-  measurer.style.width = `${widthPx}px`;
+
+  const page = document.createElement('div');
+  page.className = 'page-separator-page';
 
   const content = document.createElement('div');
   content.className = 'page-separator-page-content';
-  measurer.appendChild(content);
+  page.appendChild(content);
+  measurer.appendChild(page);
   document.body.appendChild(measurer);
 
-  return { measurer, content };
+  return { measurer, page, content };
 }
 
-function measureCandidatePageContent(rows, contentWidthMm) {
-  const { measurer, content } = createPageContentMeasurer(contentWidthMm);
+function measureCandidatePage(rows) {
+  const { measurer, page, content } = createPageContentMeasurer();
   rows.forEach(row => content.appendChild(row.cloneNode(true)));
-  const height = content.scrollHeight;
+
+  const pageBounds = page.getBoundingClientRect();
+  const contentBounds = content.getBoundingClientRect();
+  const finalRow = content.lastElementChild;
+  const finalVisibleEdge = finalRow
+    ? finalRow.getBoundingClientRect().bottom
+    : contentBounds.top;
+  const lowerSafeBoundary = pageBounds.bottom - mmToPx(A4_MARGIN_MM);
+  const contentHeight = content.scrollHeight;
 
   document.body.removeChild(measurer);
-  return height;
+  return {
+    contentHeight,
+    finalVisibleEdge,
+    lowerSafeBoundary,
+    fits: finalVisibleEdge <= lowerSafeBoundary,
+  };
 }
 
 /**
  * 将行单位顺序打包到页面中。
  * 章节标题会与下一行做 keep-with-next 处理；单行超高时允许溢出独占一页。
  */
-function distributeRowsIntoPages(rows, contentWidthMm, contentHeightMm) {
+function distributeRowsIntoPages(rows) {
   if (rows.length === 0) return [];
 
-  const pageHeightPx = mmToPx(contentHeightMm);
   const pages = [];
   let currentPage = [];
   let pendingKeepWithNext = null;
@@ -238,8 +251,7 @@ function distributeRowsIntoPages(rows, contentWidthMm, contentHeightMm) {
     let candidateRows = pendingKeepWithNext ? [pendingKeepWithNext, row] : [row];
     while (candidateRows.length > 0) {
       const candidatePage = [...currentPage, ...candidateRows];
-      const fits = measureCandidatePageContent(candidatePage, contentWidthMm) <= pageHeightPx;
-      if (fits) {
+      if (measureCandidatePage(candidatePage).fits) {
         currentPage = candidatePage;
         pendingKeepWithNext = null;
         break;
@@ -287,7 +299,7 @@ function distributeRowsIntoPages(rows, contentWidthMm, contentHeightMm) {
       pendingKeepWithNext = null;
     } else {
       const candidatePage = [...currentPage, pendingKeepWithNext];
-      if (measureCandidatePageContent(candidatePage, contentWidthMm) > pageHeightPx && currentPage.length > 0) {
+      if (!measureCandidatePage(candidatePage).fits && currentPage.length > 0) {
         commitCurrentPage();
       }
       currentPage.push(pendingKeepWithNext);
@@ -314,7 +326,7 @@ function updatePageSeparatorScale() {
  */
 function renderSeparatedPages(app, naturalNodes) {
   const rows = splitIntoRows(naturalNodes);
-  const pages = distributeRowsIntoPages(rows, PAGE_CONTENT_WIDTH_MM, PAGE_CONTENT_HEIGHT_MM);
+  const pages = distributeRowsIntoPages(rows);
 
   // 清空 #app，随后放入原始内容（打印用）与分页预览容器
   app.innerHTML = '';
@@ -329,9 +341,9 @@ function renderSeparatedPages(app, naturalNodes) {
     const wrapper = document.createElement('div');
     wrapper.className = 'page-separator-page-wrapper';
 
-    const contentHeightPx = measureCandidatePageContent(pageRows, PAGE_CONTENT_WIDTH_MM);
+    const { contentHeight: contentHeightPx, fits } = measureCandidatePage(pageRows);
     const safeContentHeightPx = mmToPx(PAGE_CONTENT_HEIGHT_MM);
-    if (contentHeightPx > safeContentHeightPx) {
+    if (!fits && contentHeightPx > safeContentHeightPx) {
       // An exceptional one-row page cannot fit on A4. Grow only the preview
       // wrapper so every line remains inspectable instead of being clipped.
       const expandedPageHeightPx = contentHeightPx + mmToPx(A4_MARGIN_MM * 2);
