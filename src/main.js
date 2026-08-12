@@ -4,6 +4,7 @@ import { initResumeEditor } from './resume-editor.js';
 import { createResumeStore } from './version-store.js';
 import { getInitialAppLocale, getSupportedAppLocales, i18nReady, setAppLocale } from './app-i18n.js';
 import { getStoredPageSeparators, setPageSeparators, initPageSeparatorResizeListener } from './page-separator-mode.js';
+import { inject } from '@vercel/analytics';
 
 const STORAGE_KEY = 'myresume2-theme';
 
@@ -163,6 +164,9 @@ import('./dev-panel.js').then(module => {
   initDevPanel = module.initDevPanel;
   createPanel();
 });
+
+// Initialize Vercel Web Analytics
+inject();
 
 if (import.meta.env.DEV && import.meta.hot) {
   import.meta.hot.accept(['./renderer.js'], async () => {
