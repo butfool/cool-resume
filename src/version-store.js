@@ -7,7 +7,8 @@ const DB_VERSION = 2;
 const CATALOG_KEY = 'catalog';
 const EMPTY_RESUME = {
   name: '', title: '', experience: '',
-  basicInfo: { items: [] }, work: [], projects: [], skills: [], education: [],
+  contactMethod: { items: [] },
+  work: [], projects: [], skills: [], education: [],
 };
 
 function clone(value) {

@@ -12,8 +12,6 @@ const ICONS = {
 
   mapPin: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>`,
 
-  user: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>`,
-
   briefcase: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>`,
 
   rocket: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09"/><path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05"/></svg>`,
@@ -41,6 +39,8 @@ function escapeHtml(text) {
 function renderInlineMarkdown(text) {
   if (text == null) return '';
   let html = escapeHtml(String(text));
+  // Allow only line-break tags after escaping; all other HTML remains text.
+  html = html.replace(/&lt;br\s*\/?&gt;/gi, '<br>');
   // 加粗 **text**
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   // 斜体 *text*（在加粗之后处理，避免与 ** 冲突）
@@ -56,14 +56,26 @@ function renderBullets(items) {
 }
 
 export function renderHeader(data) {
+  const contactItems = data.contactMethod?.items || [];
+  const contacts = contactItems.map(item => `
+    <span class="resume-contact-item">
+      ${item.label ? `<span class="resume-contact-label">${escapeHtml(item.label)}</span>` : ''}
+      <span>${escapeHtml(item.value)}</span>
+    </span>
+  `).join('');
   return `
     <header class="resume-header">
       <div class="resume-header-top">
-        <h1 class="resume-name">${escapeHtml(data.name)}</h1>
-        <div class="resume-title-line">
-          <span class="resume-headline">${escapeHtml(data.title)}</span>
-          <span class="resume-title-separator">·</span>
-          <span class="resume-years">${escapeHtml(data.experience)}</span>
+        <div class="resume-header-identity">
+          <h1 class="resume-name">${escapeHtml(data.name)}</h1>
+        </div>
+        <div class="resume-header-meta">
+          <div class="resume-title-line">
+            <span class="resume-headline">${escapeHtml(data.title)}</span>
+            <span class="resume-title-separator">·</span>
+            <span class="resume-years">${escapeHtml(data.experience)}</span>
+          </div>
+          ${contacts ? `<div class="resume-contact-line">${contacts}</div>` : ''}
         </div>
       </div>
     </header>
@@ -77,16 +89,6 @@ function renderSection(title, iconName, content) {
       <div class="resume-section-content">${content}</div>
     </section>
   `;
-}
-
-function renderBasicInfo(basicInfo) {
-  const items = basicInfo.items.map(item => `
-    <div class="resume-basic-info-item">
-      <span class="resume-basic-info-label">${escapeHtml(item.label)}</span>
-      <span class="resume-basic-info-value">${escapeHtml(item.value)}</span>
-    </div>
-  `).join('');
-  return `<div class="resume-basic-info">${items}</div>`;
 }
 
 function renderSummary(summary) {
@@ -144,29 +146,15 @@ function renderProjects(projects, locale) {
 }
 
 function renderSkills(skills) {
-  const items = skills.map(skill => `
-    <div class="resume-skill-item">
-      <div class="resume-skill-name">${escapeHtml(skill.category)}</div>
-      <div class="resume-skill-keywords">${renderSkillKeywords(skill.keywords)}</div>
-    </div>
-  `).join('');
+  const items = skills
+    .filter(skill => skill?.content)
+    .map(skill => `
+      <div class="resume-skill-item">
+        <span class="resume-skill-level">${escapeHtml(skill.level || '')}</span>
+        <span class="resume-skill-content">${renderInlineMarkdown(skill.content)}</span>
+      </div>
+    `).join('');
   return items;
-}
-
-function renderSkillKeywords(keywords) {
-  const groups = String(keywords || '')
-    .split('；')
-    .map(part => part.trim())
-    .filter(Boolean)
-    .map(part => {
-      const separator = part.indexOf(':');
-      if (separator < 0) return `<span class="resume-skill-group">${escapeHtml(part)}</span>`;
-      const level = part.slice(0, separator).trim();
-      const values = part.slice(separator + 1).trim();
-      return `<span class="resume-skill-group"><span class="resume-skill-level">${escapeHtml(level)}</span><span class="resume-skill-values">${escapeHtml(values)}</span></span>`;
-    });
-
-  return groups.join('') || '<span class="resume-skill-group">—</span>';
 }
 
 function renderEducation(education) {
@@ -185,7 +173,6 @@ function renderEducation(education) {
 }
 
 const SECTIONS = {
-  basicInfo: { key: 'basicInfo', icon: 'user', render: renderBasicInfo },
   summary: { key: 'summary', icon: 'award', render: renderSummary },
   skills: { key: 'skills', icon: 'wrench', render: renderSkills },
   work: { key: 'work', icon: 'briefcase', render: renderWork },
@@ -193,7 +180,7 @@ const SECTIONS = {
   education: { key: 'education', icon: 'graduationCap', render: renderEducation },
 };
 
-const DEFAULT_ORDER = ['header', 'basicInfo', 'summary', 'skills', 'work', 'projects', 'education'];
+const DEFAULT_ORDER = ['header', 'summary', 'skills', 'work', 'projects', 'education'];
 
 export function renderResume(data, { locale = 'zh-CN' } = {}) {
   const order = data.order || DEFAULT_ORDER;
@@ -201,6 +188,8 @@ export function renderResume(data, { locale = 'zh-CN' } = {}) {
     if (key === 'header') return renderHeader(data);
     const section = SECTIONS[key];
     if (!section) return '';
-    return renderSection(t(locale, `section.${section.key}`), section.icon, section.render(data[key], locale));
+    const content = section.render(data[key], locale);
+    if (!content) return '';
+    return renderSection(t(locale, `section.${section.key}`), section.icon, content);
   }).join('');
 }

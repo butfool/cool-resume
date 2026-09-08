@@ -79,7 +79,8 @@ function newVersionId() {
 
 const EMPTY_RESUME = {
   name: '', title: '', experience: '',
-  basicInfo: { items: [] }, work: [], projects: [], skills: [], education: [],
+  contactMethod: { items: [] },
+  work: [], projects: [], skills: [], education: [],
 };
 
 function resumeSourceSyncPlugin() {

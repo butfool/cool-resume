@@ -48,6 +48,8 @@ function applySpacing(spacing) {
 
 let activeVersion = { versionId: initialVersion.versionId };
 let activeResumeData = initialVersion.data;
+// 记录最后一次已知的数据快照（初始加载或编辑器保存后），用于识别真正的外部文件修改。
+let lastExternalData = JSON.stringify(activeResumeData);
 let activeExampleData = getExampleData(activeVersion.versionId, activeResumeData);
 let activeLocale = getInitialAppLocale();
 applySpacing(activeResumeData?.style?.spacing);
@@ -73,6 +75,7 @@ function createEditor(wasOpen = false) {
     locale: activeLocale,
     onChange: data => {
       activeResumeData = data;
+      lastExternalData = JSON.stringify(data);
       renderApp(data, { forceRecapture: true });
     },
     onSave: data => resumeStore.saveVersion(activeVersion.versionId, data),
@@ -108,6 +111,7 @@ async function changeVersion(nextActive) {
   const result = await resumeStore.setActive(nextActive.versionId);
   activeVersion = { versionId: result.versionId };
   activeResumeData = result.data;
+  lastExternalData = JSON.stringify(result.data);
   activeExampleData = getExampleData(activeVersion.versionId, activeResumeData);
   editorController?.destroy();
   panelController?.destroy();
@@ -121,6 +125,7 @@ async function reloadAfterVersionMutation(versionId, wasOpen) {
   const result = await resumeStore.setActive(versionId);
   activeVersion = { versionId: result.versionId };
   activeResumeData = result.data;
+  lastExternalData = JSON.stringify(result.data);
   activeExampleData = getExampleData(activeVersion.versionId, activeResumeData);
   editorController?.destroy();
   panelController?.destroy();
@@ -190,7 +195,6 @@ if (import.meta.env.DEV && import.meta.hot) {
 }
 
 if (import.meta.env.DEV) {
-  let lastExternalData = JSON.stringify(activeResumeData);
   window.setInterval(async () => {
     try {
       const externalData = await resumeStore.getVersion(activeVersion.versionId);
@@ -198,7 +202,8 @@ if (import.meta.env.DEV) {
       if (serialized === lastExternalData) return;
       lastExternalData = serialized;
       activeResumeData = externalData;
-      editorController?.setData(externalData);
+      // 外部文件修改只做最小差异同步：预览整体刷新，编辑器保住光标/滚动位置。
+      editorController?.syncExternal(externalData);
       renderApp(externalData, { forceRecapture: true });
     } catch { /* 外部文件暂时不可读时保留当前预览 */ }
   }, 1500);

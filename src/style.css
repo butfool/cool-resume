@@ -24,7 +24,6 @@
   --resume-list-top-gap: 4px;
   --resume-keyword-gap: 6px;
   --resume-skill-gap: 6px;
-  --resume-basic-info-gap: 6px;
   --resume-footer-gap: 32px;
 
   --font-sans:
@@ -69,10 +68,18 @@ body {
 .resume-header-top {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: flex-start;
   gap: 16px;
   flex-wrap: wrap;
   margin-bottom: var(--resume-header-bottom-gap);
+}
+.resume-header-identity { min-width: 0; }
+.resume-header-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 0;
 }
 .resume-name {
   font-size: 24px;
@@ -92,6 +99,17 @@ body {
   font-size: 12px;
   opacity: 0.7;
 }
+.resume-contact-line {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px 12px;
+  color: var(--theme-text-soft);
+  font-size: 12px;
+  line-height: 1.2;
+}
+.resume-contact-item { white-space: nowrap; }
+.resume-contact-label { margin-right: 4px; color: var(--theme-text-soft); }
 
 /* ===== Links ===== */
 a {
@@ -123,26 +141,6 @@ a:hover { border-bottom-color: var(--theme-link-hover-border); }
   height: 18px;
   flex-shrink: 0;
   color: var(--theme-section-icon-color);
-}
-
-/* ===== Basic Info ===== */
-.resume-basic-info {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--resume-basic-info-gap) 32px;
-  font-size: 14px;
-}
-.resume-basic-info-item {
-  display: flex;
-  gap: 8px;
-}
-.resume-basic-info-label {
-  color: var(--theme-text-soft);
-  flex-shrink: 0;
-  min-width: 4em;
-}
-.resume-basic-info-value {
-  color: var(--theme-text);
 }
 
 /* ===== Entry ===== */
@@ -319,45 +317,27 @@ a:hover { border-bottom-color: var(--theme-link-hover-border); }
 /* ===== Skills ===== */
 .resume-skill-item {
   display: grid;
-  grid-template-columns: minmax(76px, 20%) minmax(0, 1fr);
+  grid-template-columns: 7.5em minmax(0, 1fr);
   align-items: baseline;
-  column-gap: 14px;
+  column-gap: 8px;
   margin-bottom: var(--resume-skill-gap);
+  line-height: 1.45;
+  font-size: 13.5px;
 }
 .resume-skill-item:last-child { margin-bottom: 0; }
-.resume-skill-name {
-  font-weight: 600;
-  color: var(--theme-text);
-  line-height: 1.45;
-}
-.resume-skill-keywords {
-  font-size: 13.5px;
-  color: var(--theme-text-soft);
-  line-height: 1.45;
-  min-width: 0;
-}
-.resume-skill-group {
-  display: inline;
-}
-.resume-skill-group + .resume-skill-group::before {
-  content: ' · ';
-  color: var(--theme-border);
-}
 .resume-skill-level {
-  display: inline-block;
-  margin-right: 5px;
-  color: var(--theme-accent);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-weight: 600;
+  color: var(--theme-text-soft);
   white-space: nowrap;
 }
-.resume-skill-level::after {
-  content: ':';
-  margin-left: 1px;
-}
-.resume-skill-values {
-  color: var(--theme-text-soft);
+.resume-skill-content { color: var(--theme-text); }
+.resume-skill-content strong { font-weight: 700; }
+.resume-skill-content em { font-style: italic; }
+.resume-skill-content mark {
+  background: var(--theme-highlight-bg);
+  color: var(--theme-text);
+  padding: 0 2px;
+  border-radius: 2px;
 }
 
 /* ===== Languages ===== */
@@ -449,7 +429,6 @@ a:hover { border-bottom-color: var(--theme-link-hover-border); }
   /* 未启用 JS 分页时，保持自然流打印的 break 规则 */
   html:not(.page-separator-mode) .resume-section,
   html:not(.page-separator-mode) .resume-entry,
-  html:not(.page-separator-mode) .resume-basic-info-item,
   html:not(.page-separator-mode) .resume-skill-item {
     break-inside: avoid;
   }
@@ -628,7 +607,7 @@ body.page-separator-mode {
   /* 分页分隔线使用固定纸张并整体缩放；移动端规则不能改写页内排版。 */
   html:not(.page-separator-mode) body { padding: 24px 20px; }
   html:not(.page-separator-mode) .resume-header-top { flex-direction: column; gap: 4px; }
+  html:not(.page-separator-mode) .resume-header-meta { align-items: flex-start; width: 100%; }
   html:not(.page-separator-mode) .resume-title-line { width: 100%; }
-  html:not(.page-separator-mode) .resume-basic-info { grid-template-columns: 1fr; }
-  html:not(.page-separator-mode) .resume-skill-item { grid-template-columns: 1fr; row-gap: 2px; }
+  html:not(.page-separator-mode) .resume-contact-line { justify-content: flex-start; }
 }

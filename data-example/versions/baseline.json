@@ -13,11 +13,11 @@
       "resume-list-gap": 3
     }
   },
-  "order": ["header", "basicInfo", "summary", "work", "projects", "skills", "education"],
-  "basicInfo": {"items": [
-    {"label": "求职意向", "value": "Java 后端工程师"},
-    {"label": "现居城市", "value": "杭州"},
-    {"label": "联系方式", "value": "请替换 / user@example.com"}
+  "order": ["header", "summary", "work", "projects", "skills", "education"],
+  "contactMethod": {"items": [
+    {"label": "手机", "value": "请替换"},
+    {"label": "邮箱", "value": "user@example.com"},
+    {"label": "意向", "value": "杭州"}
   ]},
   "summary": {"items": [
     "3 年 Java 后端开发经验，具备需求分析、接口设计、服务开发、联调与线上问题排查能力。",
@@ -112,9 +112,9 @@
     }
   ],
   "skills": [
-    {"category": "编程语言", "keywords": "熟练：Java；了解：JavaScript、Python"},
-    {"category": "后端框架", "keywords": "熟练：Spring Boot、Spring；熟悉：MyBatis"},
-    {"category": "数据库与中间件", "keywords": "熟悉：MySQL、Redis、Elasticsearch"}
+    {"level": "熟练掌握", "content": "Java，了解 JavaScript、Python。"},
+    {"level": "熟练掌握", "content": "Spring Boot、Spring，熟悉 MyBatis。"},
+    {"level": "熟悉", "content": "MySQL、Redis、Elasticsearch。"}
   ],
   "education": [{"institution": "示例大学（虚构）", "degree": "学士，计算机科学与技术", "date": "2019年9月–2023年6月"}]
 }

@@ -144,13 +144,9 @@ function extractSectionRows(sectionNode) {
       if (ul) {
         Array.from(ul.children).forEach(li => rows.push(makeBulletRow(li)));
       }
-    } else if (
-      child.classList.contains('resume-basic-info') ||
-      child.classList.contains('resume-skill-item')
-    ) {
-      // 基本信息块保持原有网格布局，每个技能项作为一行
-      const type = child.classList.contains('resume-basic-info') ? 'basic-info' : 'skill-item';
-      rows.push(createRow(type, child.cloneNode(true)));
+    } else if (child.classList.contains('resume-skill-item')) {
+      // 每个技能项作为一行
+      rows.push(createRow('skill-item', child.cloneNode(true)));
     } else {
       rows.push(createRow('other', child.cloneNode(true)));
     }

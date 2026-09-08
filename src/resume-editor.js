@@ -114,7 +114,21 @@ export function initResumeEditor({ initialData, initialText, defaultData, onChan
     setStatus(silent ? t(locale, 'editor.live') : t(locale, 'editor.applied'), 'ok');
     return true;
   }
-  function writeInput(value) { setValue(value); }
+  /** 以最小差异把外部数据同步进编辑器，尽量保住光标与滚动位置。 */
+  function syncExternal(value) {
+    currentData = clone(value);
+    if (!editorView) return;
+    const nextText = JSON.stringify(value, null, 2);
+    const prevText = getValue();
+    if (prevText === nextText) return;
+    let start = 0;
+    const minLen = Math.min(prevText.length, nextText.length);
+    while (start < minLen && prevText[start] === nextText[start]) start += 1;
+    let endPrev = prevText.length;
+    let endNext = nextText.length;
+    while (endPrev > start && endNext > start && prevText[endPrev - 1] === nextText[endNext - 1]) { endPrev -= 1; endNext -= 1; }
+    editorView.dispatch({ changes: { from: start, to: endPrev, insert: nextText.slice(start, endNext) } });
+  }
 
   function jsonDiagnostics(view) {
     try { JSON.parse(view.state.doc.toString()); return []; } catch (error) {
@@ -231,6 +245,7 @@ export function initResumeEditor({ initialData, initialText, defaultData, onChan
     isOpen: () => isOpen,
     getValue,
     setData: value => { currentData = clone(value); writeInput(currentData); },
+    syncExternal,
     destroy: () => {
       window.clearTimeout(inputTimer);
       document.removeEventListener('keydown', handleEditorShortcut);
