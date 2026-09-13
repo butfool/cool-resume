@@ -2,6 +2,7 @@ import './resume-editor.css';
 import { t } from './app-i18n.js';
 import { createIcons } from 'lucide';
 import { APP_ICONS } from './icon-set.js';
+import { saveBlob, SaveCancelledError } from './file-save.js';
 import { basicSetup } from 'codemirror';
 import { json } from '@codemirror/lang-json';
 import { Annotation, EditorState, Transaction } from '@codemirror/state';
@@ -19,14 +20,9 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
-function downloadJson(value) {
+async function downloadJson(value) {
   const blob = new Blob([JSON.stringify(value, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = `${value.name || 'resume'}.json`;
-  anchor.click();
-  URL.revokeObjectURL(url);
+  await saveBlob(blob, `${value.name || 'resume'}.json`, [{ name: 'JSON', extensions: ['json'] }]);
 }
 
 function getStoredWidth() {
@@ -196,9 +192,16 @@ export function initResumeEditor({ initialData, initialText, defaultData, onChan
       setStatus(t(locale, 'editor.copied'), 'ok');
     } catch { setStatus(t(locale, 'editor.copyFailed'), 'error'); }
   });
-  editor.querySelector('[data-editor-action="download"]').addEventListener('click', () => {
+  editor.querySelector('[data-editor-action="download"]').addEventListener('click', async () => {
     const parsed = parseInput();
-    if (parsed) { downloadJson(parsed); setStatus(t(locale, 'editor.downloaded'), 'ok'); }
+    if (!parsed) return;
+    try {
+      await downloadJson(parsed);
+      setStatus(t(locale, 'editor.downloaded'), 'ok');
+    } catch (error) {
+      if (error?.name === 'SaveCancelledError' || error instanceof SaveCancelledError) return;
+      setStatus(t(locale, 'image.failed', { message: error.message || String(error) }), 'error');
+    }
   });
   editor.querySelector('[data-editor-action="upload"]').addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', async () => {
