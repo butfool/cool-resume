@@ -2,9 +2,10 @@ import './resume-editor.css';
 import { t } from './app-i18n.js';
 import { createIcons } from 'lucide';
 import { APP_ICONS } from './icon-set.js';
+import { saveBlob, SaveCancelledError } from './file-save.js';
 import { basicSetup } from 'codemirror';
 import { json } from '@codemirror/lang-json';
-import { EditorState } from '@codemirror/state';
+import { Annotation, EditorState, Transaction } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
 import { bracketMatching } from '@codemirror/language';
@@ -12,19 +13,16 @@ import { linter, lintGutter } from '@codemirror/lint';
 import { oneDark } from '@codemirror/theme-one-dark';
 
 const WIDTH_KEY = 'myresume2-resume-editor-width-v2';
+const remoteUpdate = Annotation.define();
+const LIVE_APPLY_DELAY_MS = 260;
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
-function downloadJson(value) {
+async function downloadJson(value) {
   const blob = new Blob([JSON.stringify(value, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = `${value.name || 'resume'}.json`;
-  anchor.click();
-  URL.revokeObjectURL(url);
+  await saveBlob(blob, `${value.name || 'resume'}.json`, [{ name: 'JSON', extensions: ['json'] }]);
 }
 
 function getStoredWidth() {
@@ -81,10 +79,35 @@ export function initResumeEditor({ initialData, initialText, defaultData, onChan
   }
   let editorView;
   function getValue() { return editorView?.state.doc.toString() || ''; }
-  function setValue(value) {
-    if (!editorView) return;
-    editorView.dispatch({ changes: { from: 0, to: editorView.state.doc.length, insert: JSON.stringify(value, null, 2) } });
+  function sameData(left, right) {
+    return JSON.stringify(left) === JSON.stringify(right);
   }
+  function scheduleLiveApply() {
+    window.clearTimeout(inputTimer);
+    inputTimer = window.setTimeout(() => {
+      inputTimer = null;
+      if (editorView?.composing) return;
+      applyInput({ silent: true });
+    }, LIVE_APPLY_DELAY_MS);
+  }
+  function setValue(value, { force = false } = {}) {
+    if (!editorView) return;
+    const text = JSON.stringify(value, null, 2);
+    if (editorView.state.doc.toString() === text) return;
+    if (!force) {
+      if (editorView.composing) return;
+      try {
+        if (sameData(JSON.parse(getValue()), value)) return;
+      } catch {
+        if (editorView.hasFocus || inputTimer) return;
+      }
+    }
+    editorView.dispatch({
+      changes: { from: 0, to: editorView.state.doc.length, insert: text },
+      annotations: [remoteUpdate.of(true), Transaction.addToHistory.of(false)],
+    });
+  }
+  function writeInput(value, options) { setValue(value, options); }
   function parseInput() {
     try {
       const parsed = JSON.parse(getValue());
@@ -96,6 +119,7 @@ export function initResumeEditor({ initialData, initialText, defaultData, onChan
     }
   }
   async function applyInput({ silent = false } = {}) {
+    if (editorView?.composing) return false;
     const parsed = parseInput();
     if (!parsed) return false;
     try {
@@ -114,8 +138,6 @@ export function initResumeEditor({ initialData, initialText, defaultData, onChan
     setStatus(silent ? t(locale, 'editor.live') : t(locale, 'editor.applied'), 'ok');
     return true;
   }
-  function writeInput(value) { setValue(value); }
-
   function jsonDiagnostics(view) {
     try { JSON.parse(view.state.doc.toString()); return []; } catch (error) {
       const match = String(error.message).match(/position (\d+)/i);
@@ -137,10 +159,21 @@ export function initResumeEditor({ initialData, initialText, defaultData, onChan
         lintGutter(),
         linter(jsonDiagnostics, { delay: 250 }),
         EditorView.updateListener.of(update => {
-          if (!update.docChanged) return;
+          if (!update.docChanged || update.transactions.some(transaction => transaction.annotation(remoteUpdate))) return;
+          if (update.view.composing) {
+            window.clearTimeout(inputTimer);
+            inputTimer = null;
+            return;
+          }
           setStatus(t(locale, 'editor.checking'), 'pending');
-          window.clearTimeout(inputTimer);
-          inputTimer = window.setTimeout(() => { applyInput({ silent: true }); }, 260);
+          scheduleLiveApply();
+        }),
+        EditorView.domEventHandlers({
+          compositionstart() {
+            window.clearTimeout(inputTimer);
+            inputTimer = null;
+          },
+          compositionend() { scheduleLiveApply(); },
         }),
         EditorView.theme({ '&': { height: '100%' }, '.cm-scroller': { overflow: 'auto' } }),
       ],
@@ -150,7 +183,7 @@ export function initResumeEditor({ initialData, initialText, defaultData, onChan
   editor.querySelector('[data-editor-action="apply"]').addEventListener('click', () => applyInput());
   editor.querySelector('[data-editor-action="format"]').addEventListener('click', () => {
     const parsed = parseInput();
-    if (parsed) { writeInput(parsed); setStatus(t(locale, 'editor.formatted'), 'ok'); }
+    if (parsed) { writeInput(parsed, { force: true }); setStatus(t(locale, 'editor.formatted'), 'ok'); }
   });
   editor.querySelector('[data-editor-action="copy"]').addEventListener('click', async () => {
     if (!parseInput()) return;
@@ -159,9 +192,16 @@ export function initResumeEditor({ initialData, initialText, defaultData, onChan
       setStatus(t(locale, 'editor.copied'), 'ok');
     } catch { setStatus(t(locale, 'editor.copyFailed'), 'error'); }
   });
-  editor.querySelector('[data-editor-action="download"]').addEventListener('click', () => {
+  editor.querySelector('[data-editor-action="download"]').addEventListener('click', async () => {
     const parsed = parseInput();
-    if (parsed) { downloadJson(parsed); setStatus(t(locale, 'editor.downloaded'), 'ok'); }
+    if (!parsed) return;
+    try {
+      await downloadJson(parsed);
+      setStatus(t(locale, 'editor.downloaded'), 'ok');
+    } catch (error) {
+      if (error?.name === 'SaveCancelledError' || error instanceof SaveCancelledError) return;
+      setStatus(t(locale, 'image.failed', { message: error.message || String(error) }), 'error');
+    }
   });
   editor.querySelector('[data-editor-action="upload"]').addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', async () => {
@@ -174,7 +214,7 @@ export function initResumeEditor({ initialData, initialText, defaultData, onChan
   });
   editor.querySelector('[data-editor-action="reset"]').addEventListener('click', async () => {
     currentData = clone(defaultData);
-    writeInput(currentData);
+    writeInput(currentData, { force: true });
     onChange(clone(currentData));
     try {
       await onSave?.(clone(currentData));

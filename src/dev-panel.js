@@ -2,6 +2,8 @@ import './dev-panel.css';
 import { t } from './app-i18n.js';
 import { getStoredPageSeparators, setPageSeparators, refreshPageSeparators } from './page-separator-mode.js';
 import { exportResumeImage } from './image-export.js';
+import { exportResumePdf } from './pdf-export.js';
+import { isTauriShell, SaveCancelledError } from './file-save.js';
 import { createIcons } from 'lucide';
 import { APP_ICONS } from './icon-set.js';
 import Sortable from 'sortablejs';
@@ -487,16 +489,26 @@ export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThe
     event.preventDefault();
     const submit = imageDialogForm.querySelector('[data-image-dialog-submit]');
     submit.disabled = true;
-    imageDialogStatus.hidden = true;
+    imageDialogStatus.textContent = t(locale, 'export.working');
+    imageDialogStatus.hidden = false;
     try {
-      if (exportType.value === 'pdf') await printResume();
-      else await exportResumeImage({
+      const fileName = exportFileName(catalog, activeVersion);
+      if (exportType.value === 'pdf') {
+        if (isTauriShell()) await exportResumePdf({ fileName });
+        else await printResume();
+      } else {
+        await exportResumeImage({
           format: imageDialogForm.querySelector('[data-image-format]').value,
           scale: imageDialogForm.querySelector('[data-image-scale]').value,
-          fileName: exportFileName(catalog, activeVersion),
+          fileName,
         });
+      }
       closeImageDialog();
     } catch (error) {
+      if (error?.name === 'SaveCancelledError' || error instanceof SaveCancelledError) {
+        imageDialogStatus.hidden = true;
+        return;
+      }
       imageDialogStatus.textContent = t(locale, 'image.failed', { message: error.message || String(error) });
       imageDialogStatus.hidden = false;
     } finally { submit.disabled = false; }

@@ -391,6 +391,24 @@ export function getStoredPageSeparators() {
   }
 }
 
+function restoreNaturalFlow(app, forceRecapture) {
+  const originalContainer = app.querySelector('.page-separator-original-content');
+  app.querySelectorAll('.page-separator-page-wrapper').forEach(el => el.remove());
+
+  if (originalContainer) {
+    const nodes = Array.from(originalContainer.childNodes);
+    originalContainer.remove();
+    nodes.forEach(node => app.appendChild(node));
+    originalNodes = cloneResumeNodes(app);
+    return;
+  }
+
+  // renderApp already replaced #app with fresh natural-flow HTML. Keep it.
+  // Painting stale originalNodes over it made the preview ignore JSON edits
+  // and newly created versions.
+  if (forceRecapture || !originalNodes) originalNodes = cloneResumeNodes(app);
+}
+
 export function setPageSeparators(enabled, forceRecapture = false) {
   showPageSeparators = !!enabled;
   const app = document.getElementById('app');
@@ -400,9 +418,7 @@ export function setPageSeparators(enabled, forceRecapture = false) {
     // 始终以自然流 DOM 为源；若当前已是预览状态，.page-separator-original-content 里就是自然流副本
     const naturalContainer = app.querySelector('.page-separator-original-content');
     if (forceRecapture || !originalNodes || !naturalContainer) {
-      originalNodes = naturalContainer
-        ? Array.from(naturalContainer.childNodes).map(node => node.cloneNode(true))
-        : cloneResumeNodes(app);
+      originalNodes = cloneResumeNodes(app);
     }
 
     document.documentElement.classList.add('page-separator-mode');
@@ -414,13 +430,7 @@ export function setPageSeparators(enabled, forceRecapture = false) {
   } else {
     document.documentElement.classList.remove('page-separator-mode');
     document.body.classList.remove('page-separator-mode');
-    app.querySelectorAll('.page-separator-page-wrapper').forEach(el => el.remove());
-    const originalContainer = app.querySelector('.page-separator-original-content');
-    if (originalContainer) originalContainer.remove();
-    if (originalNodes) {
-      app.innerHTML = '';
-      originalNodes.forEach(node => app.appendChild(node.cloneNode(true)));
-    }
+    restoreNaturalFlow(app, forceRecapture);
   }
 
   try {

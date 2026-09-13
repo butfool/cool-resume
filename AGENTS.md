@@ -10,11 +10,13 @@ This is a Vite-powered, client-side resume generator. Application behavior lives
 
 ```bash
 npm ci          # install the lockfile-defined dependency set
-npm run init    # create ignored local data/ from the example data
-npm run dev     # start Vite development server (normally port 60090)
-npm run build   # create output/resume.html (with dist/ as an intermediate)
-npm run pdf     # build, then export an A4 PDF in output/; requires Google Chrome on macOS
-npm run clean   # remove generated build and export files
+npm run init         # create ignored local data/ from the example data
+npm run dev          # start Vite development server (normally port 60090)
+npm run tauri:dev    # start the desktop shell (Vite + Tauri WebView)
+npm run build        # create output/resume.html (with dist/ as an intermediate)
+npm run tauri:build  # package the desktop app
+npm run pdf          # build, then export an A4 PDF in output/; requires Google Chrome on macOS
+npm run clean        # remove generated build and export files
 ```
 
 There is currently no automated test or lint command. Before submitting a change, run `npm run build`; for rendering, layout, or export changes, also inspect the result in the development server and validate `npm run pdf` when Chrome is available.

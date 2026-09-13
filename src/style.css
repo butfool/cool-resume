@@ -623,6 +623,23 @@ body.page-separator-mode {
   margin-bottom: 0;
 }
 
+/* ===== 图片/PDF 导出舞台 =====
+   克隆内容不能带上 #app 在分栏预览下的 margin/min-height，
+   否则 html2canvas 会截出「左侧空白、右侧内容」的近方形图。
+*/
+.resume-export-stage {
+  margin: 0 !important;
+  max-width: none !important;
+  transform: none !important;
+}
+.resume-export-stage #app,
+.resume-export-content {
+  margin: 0 !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  transform: none !important;
+}
+
 /* ===== Mobile ===== */
 @media (max-width: 640px) {
   /* 分页分隔线使用固定纸张并整体缩放；移动端规则不能改写页内排版。 */

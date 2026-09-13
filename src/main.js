@@ -48,6 +48,7 @@ function applySpacing(spacing) {
 
 let activeVersion = { versionId: initialVersion.versionId };
 let activeResumeData = initialVersion.data;
+let lastPersistedData = JSON.stringify(activeResumeData);
 let activeExampleData = getExampleData(activeVersion.versionId, activeResumeData);
 let activeLocale = getInitialAppLocale();
 applySpacing(activeResumeData?.style?.spacing);
@@ -75,7 +76,10 @@ function createEditor(wasOpen = false) {
       activeResumeData = data;
       renderApp(data, { forceRecapture: true });
     },
-    onSave: data => resumeStore.saveVersion(activeVersion.versionId, data),
+    onSave: async data => {
+      await resumeStore.saveVersion(activeVersion.versionId, data);
+      lastPersistedData = JSON.stringify(data);
+    },
   });
   if (wasOpen) editorController.setOpen(true);
 }
@@ -108,6 +112,7 @@ async function changeVersion(nextActive) {
   const result = await resumeStore.setActive(nextActive.versionId);
   activeVersion = { versionId: result.versionId };
   activeResumeData = result.data;
+  lastPersistedData = JSON.stringify(activeResumeData);
   activeExampleData = getExampleData(activeVersion.versionId, activeResumeData);
   editorController?.destroy();
   panelController?.destroy();
@@ -121,6 +126,7 @@ async function reloadAfterVersionMutation(versionId, wasOpen) {
   const result = await resumeStore.setActive(versionId);
   activeVersion = { versionId: result.versionId };
   activeResumeData = result.data;
+  lastPersistedData = JSON.stringify(activeResumeData);
   activeExampleData = getExampleData(activeVersion.versionId, activeResumeData);
   editorController?.destroy();
   panelController?.destroy();
@@ -179,8 +185,8 @@ import('./dev-panel.js').then(module => {
   createPanel();
 });
 
-// Initialize Vercel Web Analytics
-inject();
+const runningInTauri = Boolean(globalThis.__TAURI_INTERNALS__ || globalThis.__TAURI__);
+if (!runningInTauri) inject();
 
 if (import.meta.env.DEV && import.meta.hot) {
   import.meta.hot.accept(['./renderer.js'], async () => {
@@ -190,13 +196,17 @@ if (import.meta.env.DEV && import.meta.hot) {
 }
 
 if (import.meta.env.DEV) {
-  let lastExternalData = JSON.stringify(activeResumeData);
   window.setInterval(async () => {
     try {
       const externalData = await resumeStore.getVersion(activeVersion.versionId);
       const serialized = JSON.stringify(externalData);
-      if (serialized === lastExternalData) return;
-      lastExternalData = serialized;
+      if (serialized === lastPersistedData) return;
+      // 编辑器刚写回的内容会被下一次轮询读到；这时只同步快照，不要 setData 整份替换，否则光标会跳到第一行。
+      if (serialized === JSON.stringify(activeResumeData)) {
+        lastPersistedData = serialized;
+        return;
+      }
+      lastPersistedData = serialized;
       activeResumeData = externalData;
       editorController?.setData(externalData);
       renderApp(externalData, { forceRecapture: true });

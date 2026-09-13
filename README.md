@@ -28,6 +28,24 @@
 5. 导出发布：生成想要的格式进行使用
 6. 不断优化：创建不同的分支和版本，针对不同的岗位和公司进行优化
 
+## Desktop
+
+本地开发除了浏览器，也可以用 Tauri 桌面窗口打开同一套 Vite 应用：
+
+```bash
+npm ci
+npm run init
+npm run tauri:dev
+```
+
+打包桌面安装包：
+
+```bash
+npm run tauri:build
+```
+
+桌面版开发时仍然走 Vite 的本地 `data/` 版本库；安装包使用内置示例和浏览器本地存储（IndexedDB），不会把真实简历打进安装包。
+
 ## License
 
 项目原创代码及 `data-example/` 中的原创示例内容采用 [MIT License](LICENSE) 发布。第三方依赖、图标和其他明确标注的第三方内容仍适用各自的许可证，详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。用户创建或导入的简历内容不因使用本项目而改变权利归属。

@@ -1,8 +1,35 @@
-import html2canvas from 'html2canvas';
 import { getStoredPageSeparators, setPageSeparators } from './page-separator-mode.js';
+import { saveBlob } from './file-save.js';
+import { captureElement, withCaptureStage } from './capture-element.js';
 
 function nextFrame() {
   return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+function measureCssWidth(cssSize) {
+  const probe = document.createElement('div');
+  probe.style.cssText = `position:absolute;left:-9999px;top:0;width:${cssSize};height:0;pointer-events:none;visibility:hidden;`;
+  document.body.appendChild(probe);
+  const width = probe.getBoundingClientRect().width;
+  probe.remove();
+  return width;
+}
+
+function cloneNaturalResumeContent(app) {
+  const source = app.querySelector('.page-separator-original-content') || app;
+  const captureContent = document.createElement('div');
+  captureContent.className = 'resume-export-content';
+  Array.from(source.childNodes).forEach(node => {
+    if (
+      node.nodeType === Node.ELEMENT_NODE &&
+      typeof node.className === 'string' &&
+      (node.classList.contains('page-separator-page-wrapper') ||
+        node.classList.contains('page-separator-original-content'))
+    ) return;
+    captureContent.appendChild(node.cloneNode(true));
+  });
+  captureContent.querySelectorAll('.page-separator-page-number').forEach(node => node.remove());
+  return captureContent;
 }
 
 /**
@@ -19,43 +46,37 @@ export async function exportResumeImage({ format = 'png', scale = 2, fileName = 
   const target = document.getElementById('app');
   if (!target) throw new Error('找不到简历内容');
 
-  // 截图使用独立白色画布，避免自然流的 #app 内容紧贴图片边缘。
-  const captureRoot = document.createElement('div');
-  const captureContent = target.cloneNode(true);
-  const contentWidth = Math.ceil(target.getBoundingClientRect().width);
-  captureRoot.style.cssText = [
-    'position:absolute', 'left:-100000px', 'top:0', 'z-index:-1',
-    'box-sizing:content-box', 'width:' + contentWidth + 'px',
-    'padding:32px', 'background:#fff', 'overflow:visible',
-  ].join(';');
-  captureContent.style.width = `${contentWidth}px`;
-  captureRoot.appendChild(captureContent);
-  document.body.appendChild(captureRoot);
+  const contentWidth = Math.max(
+    1,
+    Math.ceil(
+      measureCssWidth('var(--resume-canvas-width)') ||
+      target.getBoundingClientRect().width ||
+      target.offsetWidth,
+    ),
+  );
+  const stage = await withCaptureStage(contentWidth, async root => {
+    const captureContent = cloneNaturalResumeContent(target);
+    captureContent.style.width = '100%';
+    captureContent.style.boxSizing = 'border-box';
+    captureContent.style.padding = 'var(--resume-body-padding-y) var(--resume-canvas-padding-x)';
+    captureContent.style.background = 'var(--theme-bg, #fff)';
+    root.style.padding = '32px';
+    root.appendChild(captureContent);
+  });
 
   try {
-    const canvas = await html2canvas(captureRoot, {
-      backgroundColor: '#ffffff',
-      scale: Math.min(Math.max(Number(scale) || 2, 1), 3),
-      useCORS: true,
-      logging: false,
-      windowWidth: Math.max(document.documentElement.clientWidth, captureRoot.scrollWidth),
-      height: captureRoot.scrollHeight,
-      scrollX: 0,
-      scrollY: 0,
-    });
+    const canvas = await captureElement(stage, { scale });
     const mime = format === 'jpeg' ? 'image/jpeg' : 'image/png';
     const extension = format === 'jpeg' ? 'jpg' : 'png';
     const blob = await new Promise(resolve => canvas.toBlob(resolve, mime, format === 'jpeg' ? 0.94 : undefined));
     if (!blob) throw new Error('图片编码失败');
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${fileName}.${extension}`;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    await saveBlob(blob, `${fileName}.${extension}`, [{
+      name: format === 'jpeg' ? 'JPEG' : 'PNG',
+      extensions: [extension],
+    }]);
     return { width: canvas.width, height: canvas.height };
   } finally {
-    captureRoot.remove();
+    stage.remove();
     if (hadPageSeparators) {
       setPageSeparators(true, true);
       await nextFrame();

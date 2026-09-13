@@ -3,7 +3,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const LICENSE_NAMES = ['LICENSE', 'LICENSE.md', 'LICENSE.txt', 'LICENCE', 'LICENCE.md', 'LICENCE.txt'];
+function licenseFileNames(packageDir) {
+  return fs.readdirSync(packageDir).filter(name => /^licen[cs]e/i.test(name));
+}
 
 function resolvePackageDir(packageName, fromDir) {
   let current = fromDir;
@@ -17,11 +19,11 @@ function resolvePackageDir(packageName, fromDir) {
 }
 
 function readLicense(packageDir, packageName) {
-  const licenseFile = LICENSE_NAMES
-    .map(name => path.join(packageDir, name))
-    .find(file => fs.existsSync(file));
-  if (!licenseFile) throw new Error(`Missing license file for runtime dependency: ${packageName}`);
-  return fs.readFileSync(licenseFile, 'utf8').trim();
+  const names = licenseFileNames(packageDir);
+  const preferred = names.filter(name => !/\.spdx$/i.test(name)).sort();
+  const chosen = (preferred.length ? preferred : names).sort();
+  if (!chosen.length) throw new Error(`Missing license file for runtime dependency: ${packageName}`);
+  return chosen.map(name => fs.readFileSync(path.join(packageDir, name), 'utf8').trim()).join('\n\n');
 }
 
 export function buildThirdPartyNotices() {
