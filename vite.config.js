@@ -176,7 +176,12 @@ function resumeSourceSyncPlugin() {
   };
 }
 
+const tauriHost = process.env.TAURI_DEV_HOST;
+const runningInTauri = Boolean(tauriHost) || process.env.TAURI_ENV_PLATFORM != null;
+
 export default defineConfig({
+  clearScreen: false,
+  envPrefix: ['VITE_', 'TAURI_ENV_'],
   plugins: [
     resumeSourceSyncPlugin(),
     viteSingleFile(),
@@ -223,7 +228,14 @@ export default defineConfig({
   ],
   server: {
     port: 60090,
-    strictPort: false,
+    strictPort: runningInTauri,
+    host: tauriHost || false,
+    hmr: tauriHost
+      ? { protocol: 'ws', host: tauriHost, port: 60091 }
+      : undefined,
+    watch: {
+      ignored: ['**/src-tauri/**'],
+    },
   },
   build: {
     target: 'esnext',

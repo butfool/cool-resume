@@ -11,12 +11,16 @@
     "dev": "vite",
     "build": "vite build",
     "pdf": "npm run build && node scripts/export-pdf.js",
-    "clean": "node scripts/clean.js"
+    "clean": "node scripts/clean.js",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
   },
   "keywords": [
     "resume"
   ],
   "devDependencies": {
+    "@tauri-apps/cli": "^2.11.4",
     "puppeteer-core": "^25.5.0",
     "vite": "^8.2.0",
     "vite-plugin-singlefile": "^2.3.3"
@@ -24,6 +28,9 @@
   "dependencies": {
     "@codemirror/lang-json": "^6.0.2",
     "@codemirror/theme-one-dark": "^6.1.3",
+    "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/plugin-dialog": "^2.7.3",
+    "@tauri-apps/plugin-fs": "^2.5.2",
     "@vercel/analytics": "^2.0.1",
     "codemirror": "^6.0.2",
     "html2canvas": "^1.4.1",

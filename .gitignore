@@ -1,6 +1,9 @@
 node_modules/
 dist/
 output/
+src-tauri/target/
+src-tauri/gen/schemas
+release/
 *.log
 .env*
 .DS_Store
