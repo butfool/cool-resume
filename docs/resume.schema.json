@@ -1,23 +1,23 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/butfool/cool-resume/blob/main/data-example/schema/resume.schema.json",
+  "$id": "https://github.com/butfool/cool-resume/blob/main/docs/resume.schema.json",
   "title": "Cool Resume Version",
-  "description": "cool-resume 单个简历版本 (versions/<id>.json) 的官方数据契约。被渲染器、编辑器、迁移模块与 AI 提示词共同引用。任何对字段的增删必须同步: (1) src/renderer.js (2) src/version-store.js 的 EMPTY_RESUME (3) 本 schema (4) docs/ai-prompt.md。",
+  "description": "cool-resume 单个简历版本 (versions/<id>.json) 的官方数据契约,被渲染器、编辑器、迁移模块与 AI 提示词共同引用。同步责任: 字段增删必须同步 src/renderer.js、两处 EMPTY_RESUME (src/version-store.js 与 vite.config.js) 与本 schema;同步关系由 tests/schema-contract.test.js 护栏验证。变更策略: 追加可选字段不需要 bump schemaVersion 也不需要迁移;重命名/删除/改类型才需要 bump + 新增迁移函数。结构性约束在本 schema;内容质量约束 (非空、STAR、量化) 在 CLAUDE.md 的 AI 改写约束层。AI 改写时遇到 schema 未定义的字段应原样保留,不得静默删除。",
   "type": "object",
   "required": ["schemaVersion", "name", "title", "experience", "order", "contactMethod", "summary", "work", "projects", "skills", "education"],
   "additionalProperties": true,
   "properties": {
     "schemaVersion": {
-      "description": "数据模型版本号。加载时被迁移模块用来推断要跑哪一段迁移函数,以及何时把数据回写为最新 schema。",
+      "description": "数据模型版本号。加载时被迁移模块用来推断要跑哪一段迁移函数。追加可选字段不 bump 本值;破坏性变更才 bump,并在 src/migrations.js 注册 'X->Y' 迁移函数。",
       "const": 3
     },
     "exampleNotice": {
       "type": "string",
       "description": "示例简历顶部声明: 所有人物/组织/学校/经历/成果均为虚构,需替换为真实且有权使用的内容。仅 data-example/ 演示版需要,真实 data/ 版本不必带。"
     },
-    "name": { "type": "string", "minLength": 1, "description": "姓名,作为 <h1> 渲染。" },
-    "title": { "type": "string", "minLength": 1, "description": "目标职位 / 简历标题,与姓名同区域显示。" },
-    "experience": { "type": "string", "minLength": 1, "description": "经验年限文本,如 '3 年经验'。与 title 用 '·' 分隔渲染。" },
+    "name": { "type": "string", "description": "姓名,作为 <h1> 渲染。允许空串 (新建版本的草稿态);非空要求由 CLAUDE.md 的 AI 改写约束层负责。" },
+    "title": { "type": "string", "description": "目标职位 / 简历标题,与姓名同区域显示。允许空串 (草稿态)。" },
+    "experience": { "type": "string", "description": "经验年限文本,如 '3 年经验'。与 title 用 '·' 分隔渲染。允许空串 (草稿态)。" },
     "theme": {
       "type": "string",
       "enum": ["minimal", "navy", "ats", "teal", "graphite", "editorial"],

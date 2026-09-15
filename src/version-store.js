@@ -9,7 +9,9 @@ const CATALOG_KEY = 'catalog';
 const EMPTY_RESUME = {
   schemaVersion: CURRENT_SCHEMA_VERSION,
   name: '', title: '', experience: '',
+  order: ['header', 'summary', 'skills', 'work', 'projects', 'education'],
   contactMethod: { items: [] },
+  summary: { items: [] },
   work: [], projects: [], skills: [], education: [],
 };
 

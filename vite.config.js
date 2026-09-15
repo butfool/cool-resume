@@ -91,7 +91,9 @@ function newVersionId() {
 const EMPTY_RESUME = {
   schemaVersion: 3,
   name: '', title: '', experience: '',
+  order: ['header', 'summary', 'skills', 'work', 'projects', 'education'],
   contactMethod: { items: [] },
+  summary: { items: [] },
   work: [], projects: [], skills: [], education: [],
 };
 
