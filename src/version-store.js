@@ -1,4 +1,5 @@
 import bundledCatalog from '../data-example/catalog.json';
+import { migrate, needsMigration, CURRENT_SCHEMA_VERSION } from './migrations.js';
 
 const bundledFiles = import.meta.glob('../data-example/versions/*.json', { eager: true, import: 'default' });
 const ACTIVE_KEY = 'myresume2-active-version';
@@ -6,6 +7,7 @@ const DB_NAME = 'myresume2-resume-versions';
 const DB_VERSION = 2;
 const CATALOG_KEY = 'catalog';
 const EMPTY_RESUME = {
+  schemaVersion: CURRENT_SCHEMA_VERSION,
   name: '', title: '', experience: '',
   contactMethod: { items: [] },
   work: [], projects: [], skills: [], education: [],
@@ -144,12 +146,13 @@ export function createResumeStore() {
     const entry = findEntry(versionId);
     if (dev) {
       const response = await fetch(`/__resume_versions/${encodeURIComponent(versionId)}`);
-      if (!response.ok) throw new Error(`简历版本读取失败：HTTP ${response.status}`);
-      return response.json();
-    }
-    const local = await idbGet(`data:${versionId}`);
-    if (local) return clone(local);
-    return getBundledVersion(entry.id, catalog).data;
+        if (!response.ok) throw new Error(`简历版本读取失败：HTTP ${response.status}`);
+        // dev 模式下 读路径 不做迁移: 旧数据应该被看到，由 Dev banner 引导用户调用一键迁移。
+        return response.json();
+      }
+      const local = await idbGet(`data:${versionId}`);
+      // 同上：IndexedDB 读路径也不做迁移，由迁移机制统一管理。
+      return local ? clone(local) : getBundledVersion(entry.id, catalog).data;
   }
 
   async function setActive(versionId) {
@@ -249,10 +252,13 @@ export function createResumeStore() {
     },
     async saveVersion(versionId, data) {
       findEntry(versionId);
+      // 保存路径同时是收口: 任何编辑器外的脚本写入的旧数据,
+      // 都先经过迁移,避免下次加载时重复跑迁移与人为携带遗留字段。
+      const normalized = needsMigration(data) ? migrate(data) : { ...data, schemaVersion: CURRENT_SCHEMA_VERSION };
       if (dev) {
-        const response = await fetch(`/__resume_versions/${encodeURIComponent(versionId)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        const response = await fetch(`/__resume_versions/${encodeURIComponent(versionId)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(normalized) });
         if (!response.ok) throw new Error(`简历保存失败：HTTP ${response.status}`);
-      } else await idbPut(`data:${versionId}`, clone(data));
+      } else await idbPut(`data:${versionId}`, clone(normalized));
     },
   };
 }

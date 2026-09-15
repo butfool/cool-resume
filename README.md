@@ -12,6 +12,9 @@
 ## Features
 
 - 本地优先：数据都在本地，JSON 格式，并且提示词都写好了，可以让 AI 直接修改、生成和优化简历内容
+  - 官方 JSON Schema 定义: [`docs/resume.schema.json`](docs/resume.schema.json) (Draft 2020-12)
+  - AI 改写简历时的提示词基线与字段说明: [`CLAUDE.md`](CLAUDE.md) 中的「版本 JSON 数据结构」一节,明确引用上述 schema 作为格式契约
+  - 旧格式数据会在加载时自动迁移至当前 schema (详见 `src/migrations.js`),无需手动重写
 - 灵活自由：方便自定义模板、主题和排版
 - 多版本支持：支持创建多个简历版本，便于针对不同岗位定制
 - 在线预览：支持在浏览器中实时预览简历效果

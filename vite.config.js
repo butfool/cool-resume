@@ -7,6 +7,7 @@ import { randomUUID } from 'node:crypto';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { buildThirdPartyNotices } from './scripts/third-party-notices.js';
+import { findLegacyFiles, migrateAll } from './scripts/migrate.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dataRoot = path.resolve(__dirname, 'data');
@@ -21,6 +22,16 @@ function versionPath(versionId) {
 
 async function readJson(file) {
   return JSON.parse(await fs.promises.readFile(file, 'utf8'));
+}
+
+/**
+ * 读取本地版本文件。
+ * 设计选择: 不在读路径上自动迁移。原因——旧格式数据应该被看到 (而不是静默修正为 "看上去正常"),
+ * Dev banner 会明确告知需要运行 npm run migrate 或点击一键迁移。
+ * load-time 迁移的唯一合法入口是 scripts/migrate.js / POST /__resume_versions/migrate-all。
+ */
+async function readJsonWithMigration(file) {
+  return readJson(file);
 }
 
 async function writeJsonAtomic(file, value) {
@@ -78,6 +89,7 @@ function newVersionId() {
 }
 
 const EMPTY_RESUME = {
+  schemaVersion: 3,
   name: '', title: '', experience: '',
   contactMethod: { items: [] },
   work: [], projects: [], skills: [], education: [],
@@ -102,6 +114,20 @@ function resumeSourceSyncPlugin() {
             send(200, catalog);
             return;
           }
+          if (parts.length === 1 && parts[0] === 'legacy-versions' && req.method === 'GET') {
+            const legacy = await findLegacyFiles();
+            send(200, {
+              target: catalog.schemaVersion ?? null,
+              count: legacy.length,
+              versions: legacy.map(item => ({ id: item.id, schemaVersion: item.schemaVersion })),
+            });
+            return;
+          }
+          if (parts.length === 1 && parts[0] === 'migrate-all' && req.method === 'POST') {
+            const results = await migrateAll();
+            send(200, { count: results.length, results });
+            return;
+          }
           if (req.method === 'POST' && parts.length === 0) {
             const { name, parentId = null, copyFromVersionId = null } = await readRequestJson(req);
             const normalizedName = String(name || '').trim();
@@ -111,7 +137,7 @@ function resumeSourceSyncPlugin() {
             const versionId = newVersionId();
             const now = new Date().toISOString();
             const version = { id: versionId, name: normalizedName, parentId, file: `versions/${versionId}.json`, createdAt: now, updatedAt: now };
-            const data = source ? await readJson(versionPath(source.id)) : EMPTY_RESUME;
+            const data = source ? await readJsonWithMigration(versionPath(source.id)) : EMPTY_RESUME;
             await writeJsonAtomic(versionPath(versionId), data);
             const nextCatalog = { ...catalog, versions: [...catalog.versions, version] };
             await writeJsonAtomic(catalogPath, nextCatalog);
@@ -136,7 +162,7 @@ function resumeSourceSyncPlugin() {
           if (parts.length === 1) {
             const version = getVersion(catalog, parts[0]);
             const file = versionPath(version.id);
-            if (req.method === 'GET') { send(200, await readJson(file)); return; }
+            if (req.method === 'GET') { send(200, await readJsonWithMigration(file)); return; }
             if (req.method === 'PUT') {
               const value = await readRequestJson(req);
               if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('简历数据顶层必须是 JSON 对象');
@@ -185,14 +211,15 @@ export default defineConfig({
       name: 'inject-resume-theme',
       transformIndexHtml: {
         order: 'pre',
-        handler(html, ctx) {
+        async handler(html, ctx) {
           if (!ctx.filename.endsWith('index.html')) return html;
           try {
             const sourceRoot = ctx.server ? dataRoot : exampleRoot;
             const sourceCatalogPath = path.join(sourceRoot, 'catalog.json');
             const catalog = JSON.parse(fs.readFileSync(sourceCatalogPath, 'utf-8'));
             const activePath = path.join(sourceRoot, 'versions', `${catalog.activeVersionId}.json`);
-            const theme = JSON.parse(fs.readFileSync(activePath, 'utf-8')).theme;
+            const activeData = await readJsonWithMigration(activePath);
+            const theme = activeData.theme;
             if (theme && typeof theme === 'string') {
               return html.replace('<html lang="zh-hans">', `<html lang="zh-hans" data-theme="${theme}">`);
             }

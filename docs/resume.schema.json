@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/butfool/cool-resume/blob/main/data-example/schema/resume.schema.json",
+  "title": "Cool Resume Version",
+  "description": "cool-resume 单个简历版本 (versions/<id>.json) 的官方数据契约。被渲染器、编辑器、迁移模块与 AI 提示词共同引用。任何对字段的增删必须同步: (1) src/renderer.js (2) src/version-store.js 的 EMPTY_RESUME (3) 本 schema (4) docs/ai-prompt.md。",
+  "type": "object",
+  "required": ["schemaVersion", "name", "title", "experience", "order", "contactMethod", "summary", "work", "projects", "skills", "education"],
+  "additionalProperties": true,
+  "properties": {
+    "schemaVersion": {
+      "description": "数据模型版本号。加载时被迁移模块用来推断要跑哪一段迁移函数,以及何时把数据回写为最新 schema。",
+      "const": 3
+    },
+    "exampleNotice": {
+      "type": "string",
+      "description": "示例简历顶部声明: 所有人物/组织/学校/经历/成果均为虚构,需替换为真实且有权使用的内容。仅 data-example/ 演示版需要,真实 data/ 版本不必带。"
+    },
+    "name": { "type": "string", "minLength": 1, "description": "姓名,作为 <h1> 渲染。" },
+    "title": { "type": "string", "minLength": 1, "description": "目标职位 / 简历标题,与姓名同区域显示。" },
+    "experience": { "type": "string", "minLength": 1, "description": "经验年限文本,如 '3 年经验'。与 title 用 '·' 分隔渲染。" },
+    "theme": {
+      "type": "string",
+      "enum": ["minimal", "navy", "ats", "teal", "graphite", "editorial"],
+      "description": "主题 ID。决定 <html data-theme> 属性与 themes.css 中的配色变量集。"
+    },
+    "style": {
+      "type": "object",
+      "description": "排版覆盖值,作用于 style.css 的 --resume-* 自定义属性。",
+      "additionalProperties": false,
+      "properties": {
+        "spacing": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "resume-line-height": { "type": "number", "minimum": 1, "maximum": 3, "description": "正文字行高,无单位。" },
+            "resume-body-padding-y": { "type": "integer", "minimum": 0, "maximum": 80, "description": "页面顶部内边距,px。" },
+            "resume-section-gap": { "type": "integer", "minimum": 0, "maximum": 60, "description": "章节之间的间距,px。" },
+            "resume-entry-gap": { "type": "integer", "minimum": 0, "maximum": 48, "description": "同章节内多条目的间距,px。" },
+            "resume-list-gap": { "type": "integer", "minimum": 0, "maximum": 16, "description": "项目符号列表的项间距,px。" }
+          }
+        }
+      }
+    },
+    "order": {
+      "type": "array",
+      "description": "章节渲染顺序。header 固定第一;后续从下列合法键中自由排列;v3 不再支持 'basicInfo'。",
+      "items": {
+        "type": "string",
+        "enum": ["header", "summary", "skills", "work", "projects", "education"]
+      },
+      "minItems": 1
+    },
+    "contactMethod": {
+      "type": "object",
+      "description": "联系方式 (v3 重命名自 basicInfo)。渲染在 Header 与姓名/职位同行,不再单独成块。",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["value"],
+            "properties": {
+              "label": { "type": "string", "description": "可选: 显示在值前的标签,如 '手机' / '邮箱'。" },
+              "value": { "type": "string", "minLength": 1, "description": "联系方式值,如手机号、邮箱、城市、意向岗位。" }
+            }
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "description": "自我介绍段落,渲染为无序列表。每条一行;支持内联 Markdown (**bold**、==highlight==、<br> 换行)。",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "work": {
+      "type": "array",
+      "description": "工作经历。每条渲染为一个 entry: 标题=公司·职位,右侧时间,下方 bullet 列表。",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["company", "position", "date", "summary"],
+        "properties": {
+          "company": { "type": "string", "minLength": 1 },
+          "position": { "type": "string", "minLength": 1 },
+          "date": { "type": "string", "minLength": 1, "description": "在职时间段,可自由文本,渲染不做解析。" },
+          "summary": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "STAR 描述,每条以动词开头、突出个人贡献与可量化结果。" }
+        }
+      }
+    },
+    "projects": {
+      "type": "array",
+      "description": "项目经历。每条渲染为一个 entry: 标题=项目名,右侧时间,下方 background/techStack/role 三段元数据 + bullet 列表。",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "date", "summary"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "date": { "type": "string", "minLength": 1 },
+          "background": { "type": "string", "description": "项目背景: 业务目标、技术挑战、规模。空字符串或缺失则不渲染该行。" },
+          "techStack": { "type": "string", "description": "技术栈一行文本。" },
+          "role": { "type": "string", "description": "在项目中的角色 / 职责范围。" },
+          "summary": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+        }
+      }
+    },
+    "skills": {
+      "type": "array",
+      "description": "技能 (v3 重构: 由 {category, keywords} 改为 {level, content})。content 支持内联 Markdown;空 content 的条目会被渲染跳过。",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["content"],
+        "properties": {
+          "level": { "type": "string", "description": "熟练度,如 '精通' / '熟练掌握' / '熟悉' / '了解'。社招慎用 '精通'。" },
+          "content": { "type": "string", "minLength": 1, "description": "技能内容,如 'Spring Boot、Spring,熟悉 MyBatis'。支持 ==高亮==、**加粗**、<br>。" }
+        }
+      }
+    },
+    "education": {
+      "type": "array",
+      "description": "教育背景。每条渲染为 institution + degree + date。",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["institution", "degree", "date"],
+        "properties": {
+          "institution": { "type": "string", "minLength": 1 },
+          "degree": { "type": "string", "description": "专业与学位,如 '学士,计算机科学与技术'。" },
+          "date": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}
