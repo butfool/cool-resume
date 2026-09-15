@@ -39,6 +39,14 @@ The resume version format (`data/versions/<id>.json`, `data-example/versions/bas
   3. Update `CLAUDE.md` → "版本 JSON 数据结构" to reflect the new shape.
   4. Update `data-example/versions/baseline.json` to the new shape and bump its `schemaVersion`.
   5. Update `src/version-store.js`'s `EMPTY_RESUME` and `vite.config.js`'s `EMPTY_RESUME` to the new shape.
+  6. Run `npm test` — `tests/schema-contract.test.js` verifies the schema stays in sync with code constants (themes, sections, spacing keys, `EMPTY_RESUME`, baseline) and fails loudly on drift.
+
+Two change classes with different cost:
+
+- **Additive** (new optional field, new theme, new section): edit schema + renderer (+ dev-panel if UI), no `schemaVersion` bump, no migration. Old files remain valid because the field is optional.
+- **Breaking** (rename/delete/type change, like v2→v3): everything above PLUS a new `'X->Y'` migration in `src/migrations.js` and a `schemaVersion` bump. Should be rare now that the model has settled.
+
+The schema is the structural contract; content quality (non-empty fields, STAR, quantified results) lives in `CLAUDE.md`'s "AI 改写约束" layer. AI rewrites must preserve fields not defined in the schema instead of deleting them.
 
 Loading a version file (dev middleware GET, the Vite HTML theme injection, IndexedDB reads) runs `needsMigration` + `migrate` automatically and writes the migrated form back to disk/IndexedDB so subsequent reads skip the work. The `saveVersion` path also normalizes input through `migrate` to catch edits that bypass the editor.
 
