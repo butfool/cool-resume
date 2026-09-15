@@ -144,3 +144,15 @@ test('CLAUDE.md 中 AI 约束层存在且引用 schema (结构性契约与质量
   assert.match(claudeMd, /AI 改写约束/, 'CLAUDE.md 必须包含 AI 改写约束层');
   assert.match(claudeMd, /原样保留/, 'AI 约束必须包含"未定义字段原样保留"规则');
 });
+
+/**
+ * 回归护栏: FAB 与 PopOver 都带 display 属性,会覆盖 hidden 属性的 UA display:none——
+ * 曾导致空黄条常驻页面顶部。隐藏规则必须始终存在。
+ */
+test('migration FAB/PopOver 必须有 [hidden] 显式隐藏规则 (防 display 覆盖 hidden)', () => {
+  const css = read('src/style.css');
+  assert.match(css, /\.resume-migration-fab\[hidden\]\s*\{\s*display:\s*none;/,
+    'style.css 缺少 .resume-migration-fab[hidden] { display: none } — 空黄条 bug 会复发');
+  assert.match(css, /\.resume-migration-popover\[hidden\]\s*\{\s*display:\s*none;/,
+    'style.css 缺少 .resume-migration-popover[hidden] { display: none } — 空 PopOver bug 会复发');
+});

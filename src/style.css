@@ -59,55 +59,96 @@ body {
   padding: var(--resume-body-padding-y) var(--resume-canvas-padding-x);
 }
 
-/* ===== Dev-mode migration banner (固定置顶、不可关闭) ===== */
-.resume-migration-banner {
-  position: sticky;
-  top: 0;
-  z-index: 9999;
-  display: flex;
+/* ===== Dev-mode migration 提示 (FAB 悬浮徽标 + PopOver,不遮挡简历预览) ===== */
+.resume-migration-popover-root { position: fixed; right: 24px; bottom: 24px; z-index: 9999; font: 14px/1.5 var(--resume-font, system-ui, sans-serif); }
+.resume-migration-fab {
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  gap: 16px;
-  padding: 14px 20px;
-  background: #fff3cd;
-  border-bottom: 2px solid #d93025;
-  color: #5f1d00;
-  font: 14px/1.5 var(--resume-font, system-ui, sans-serif);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-}
-.resume-migration-banner-error { background: #fdecea; border-bottom-color: #b00020; color: #5a0014; }
-.resume-migration-banner-body { flex: 1 1 auto; min-width: 0; }
-.resume-migration-banner-detail { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
-.resume-migration-banner-detail code {
-  background: rgba(0, 0, 0, 0.06);
-  padding: 1px 6px;
-  border-radius: 3px;
-  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  font-size: 13px;
-}
-.resume-migration-banner-hint { margin-top: 6px; font-size: 13px; opacity: 0.85; }
-.resume-migration-banner-hint code {
-  background: rgba(0, 0, 0, 0.08);
-  padding: 1px 6px;
-  border-radius: 3px;
-  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-}
-.resume-migration-banner-actions { flex: 0 0 auto; }
-.resume-migration-banner-button {
+  gap: 8px;
   border: none;
   background: #d93025;
   color: white;
-  padding: 8px 18px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(217, 48, 37, 0.4);
+}
+.resume-migration-fab:hover { background: #b71c1c; }
+.resume-migration-fab[hidden] { display: none; }
+.resume-migration-fab-dot { width: 8px; height: 8px; border-radius: 50%; background: #ffd54f; animation: resume-migration-pulse 1.6s ease-in-out infinite; }
+@keyframes resume-migration-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(0.75); } }
+.resume-migration-fab-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #212121;
+  color: white;
+  font-size: 12px;
+  line-height: 20px;
+  text-align: center;
+}
+.resume-migration-popover {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 12px);
+  width: 340px;
+  padding: 16px 18px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-top: 3px solid #d93025;
+  border-radius: 10px;
+  color: #333;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+}
+.resume-migration-popover[hidden] { display: none; }
+.resume-migration-popover::after {
+  content: '';
+  position: absolute;
+  right: 28px;
+  bottom: -6px;
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border-right: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  transform: rotate(45deg);
+}
+.resume-migration-popover-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.resume-migration-popover-title.resume-migration-popover-error { color: #b00020; }
+.resume-migration-popover-desc { font-size: 13px; line-height: 1.55; color: #555; margin-bottom: 10px; }
+.resume-migration-popover-detail { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin-bottom: 12px; }
+.resume-migration-popover-detail code {
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+.resume-migration-popover-detail small { color: #888; }
+.resume-migration-popover-button {
+  width: 100%;
+  border: none;
+  background: #d93025;
+  color: white;
+  padding: 9px 0;
   border-radius: 6px;
   font: inherit;
   font-weight: 600;
   cursor: pointer;
 }
-.resume-migration-banner-button:hover:not([disabled]) { background: #b71c1c; }
-.resume-migration-banner-button[disabled] { background: #aaa; cursor: not-allowed; }
+.resume-migration-popover-button:hover:not([disabled]) { background: #b71c1c; }
+.resume-migration-popover-button[disabled] { background: #aaa; cursor: not-allowed; }
 @media (max-width: 640px) {
-  .resume-migration-banner { flex-direction: column; align-items: stretch; }
-  .resume-migration-banner-actions { display: flex; }
-  .resume-migration-banner-button { width: 100%; }
+  .resume-migration-popover-root { right: 16px; bottom: 16px; }
+  .resume-migration-popover { width: min(340px, calc(100vw - 32px)); }
 }
 
 /* ===== Header：姓名 + 岗位/年限 ===== */
