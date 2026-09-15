@@ -7,6 +7,7 @@ output/
 CLAUDE.md
 .claude/
 .codex/
+.pi/
 .specify/
 specs/
 design-qa.md
