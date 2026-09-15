@@ -59,6 +59,57 @@ body {
   padding: var(--resume-body-padding-y) var(--resume-canvas-padding-x);
 }
 
+/* ===== Dev-mode migration banner (固定置顶、不可关闭) ===== */
+.resume-migration-banner {
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  background: #fff3cd;
+  border-bottom: 2px solid #d93025;
+  color: #5f1d00;
+  font: 14px/1.5 var(--resume-font, system-ui, sans-serif);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+.resume-migration-banner-error { background: #fdecea; border-bottom-color: #b00020; color: #5a0014; }
+.resume-migration-banner-body { flex: 1 1 auto; min-width: 0; }
+.resume-migration-banner-detail { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
+.resume-migration-banner-detail code {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px;
+}
+.resume-migration-banner-hint { margin-top: 6px; font-size: 13px; opacity: 0.85; }
+.resume-migration-banner-hint code {
+  background: rgba(0, 0, 0, 0.08);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+.resume-migration-banner-actions { flex: 0 0 auto; }
+.resume-migration-banner-button {
+  border: none;
+  background: #d93025;
+  color: white;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.resume-migration-banner-button:hover:not([disabled]) { background: #b71c1c; }
+.resume-migration-banner-button[disabled] { background: #aaa; cursor: not-allowed; }
+@media (max-width: 640px) {
+  .resume-migration-banner { flex-direction: column; align-items: stretch; }
+  .resume-migration-banner-actions { display: flex; }
+  .resume-migration-banner-button { width: 100%; }
+}
+
 /* ===== Header：姓名 + 岗位/年限 ===== */
 .resume-header {
   margin-bottom: var(--resume-header-gap);

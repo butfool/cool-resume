@@ -195,6 +195,10 @@ if (import.meta.env.DEV && import.meta.hot) {
 }
 
 if (import.meta.env.DEV) {
+  // 旧格式版本检查:启动时探测 + 每次面板重建 (重命名 / 移动 / 切换语言 / 切换激活版本 / 复制 / 新建 / 删除) 后重新探测。
+  import('./migration-banner.js').then(({ ensureMigrationBanner }) => {
+    ensureMigrationBanner();
+  });
   window.setInterval(async () => {
     try {
       const externalData = await resumeStore.getVersion(activeVersion.versionId);

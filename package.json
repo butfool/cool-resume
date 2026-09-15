@@ -8,6 +8,8 @@
   },
   "scripts": {
     "init": "node scripts/init-resume.js",
+    "migrate": "node scripts/migrate.js",
+    "test": "node --test tests/",
     "dev": "vite",
     "build": "vite build",
     "pdf": "npm run build && node scripts/export-pdf.js",
