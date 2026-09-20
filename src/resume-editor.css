@@ -69,5 +69,16 @@ html.resume-editor-is-resizing, html.resume-editor-is-resizing body { cursor: co
   .resume-json-editor { width: 100%; }
   html.resume-editor-split-mode #app, html.resume-editor-split-mode.page-separator-mode #app { display: none; }
 }
-@media print { .resume-json-editor { display: none !important; } }
+@media print {
+  .resume-json-editor { display: none !important; }
+  /* JSON 编辑器的 split-mode 把 #app 向右偏移编辑器宽度。打印时编辑器已隐藏，
+     同步把 #app 的偏移和宽度复位，让打印稿与预览保持一致。 */
+  html.resume-editor-split-mode #app,
+  html.resume-editor-split-mode.page-separator-mode #app {
+    width: auto !important;
+    min-height: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
 @media (prefers-reduced-motion: reduce) { .resume-json-editor, .resume-json-editor-input, .resume-json-editor-button, .resume-json-editor-icon-button, .resume-json-editor-status { transition: none; } }

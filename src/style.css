@@ -486,7 +486,7 @@ a:hover { border-bottom-color: var(--theme-link-hover-border); }
     display: none !important;
   }
 
-  html.page-separator-mode .page-separator-page-wrapper {
+  html.page-separator-mode .page-separator-page-wrapper:not(:last-child) {
     break-after: page;
     width: 210mm !important;
     height: 297mm !important;
