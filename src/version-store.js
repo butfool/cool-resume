@@ -1,5 +1,6 @@
 import bundledCatalog from '../data-example/catalog.json';
 import { migrate, needsMigration, CURRENT_SCHEMA_VERSION } from './migrations.js';
+import { requireVersionId } from './version-id.js';
 
 const bundledFiles = import.meta.glob('../data-example/versions/*.json', { eager: true, import: 'default' });
 const ACTIVE_KEY = 'myresume2-active-version';
@@ -75,11 +76,6 @@ async function idbDelete(key) {
     request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
   });
-}
-
-function createVersionId() {
-  const suffix = globalThis.crypto?.randomUUID?.().slice(0, 8) || Math.random().toString(36).slice(2, 10);
-  return `v-${Date.now().toString(36)}-${suffix}`;
 }
 
 function moveEntries(catalog, versionId, targetId, placement) {
@@ -197,19 +193,20 @@ export function createResumeStore() {
       }
       return clone(catalog);
     },
-    async createVersion({ name, parentId = null, copyFromVersionId = null }) {
+    async createVersion({ name, fileName, parentId = null, copyFromVersionId = null }) {
       const normalizedName = String(name || '').trim();
       if (!normalizedName) throw new Error('版本名称不能为空');
       if (parentId !== null) findEntry(parentId);
       if (copyFromVersionId !== null) findEntry(copyFromVersionId);
+      const versionId = requireVersionId(fileName);
+      if (catalog.versions.some(item => item.id === versionId)) throw new Error(`文件名已存在：${versionId}.json`);
       if (dev) {
-        const response = await fetch('/__resume_versions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: normalizedName, parentId, copyFromVersionId }) });
+        const response = await fetch('/__resume_versions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: normalizedName, fileName, parentId, copyFromVersionId }) });
         if (!response.ok) throw new Error((await response.json()).error || `创建版本失败：HTTP ${response.status}`);
         const result = await response.json();
         catalog = result.catalog;
         return { versionId: result.versionId, data: result.data };
       }
-      const versionId = createVersionId();
       const data = copyFromVersionId ? await getVersion(copyFromVersionId) : clone(EMPTY_RESUME);
       const now = new Date().toISOString();
       catalog.versions.push({ id: versionId, name: normalizedName, parentId, file: `versions/${versionId}.json`, createdAt: now, updatedAt: now });

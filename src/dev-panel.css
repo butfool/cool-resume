@@ -186,6 +186,8 @@ body.resume-version-dragging, body.resume-version-dragging * { cursor: grabbing 
 .resume-version-dialog-field { display: grid; gap: 7px; margin-top: 13px; color: #57534e; font-size: 12px; font-weight: 600; }
 .resume-version-dialog-field input, .resume-version-dialog-field select { width: 100%; height: 34px; padding: 0 9px; border: 1px solid #d6d3d1; border-radius: 7px; outline: none; background: #fff; color: #292524; font: 500 12px var(--font-sans); }
 .resume-version-dialog-field input:focus, .resume-version-dialog-field select:focus { border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(59,130,246,.12); }
+.resume-version-dialog-field input:disabled { background: #f5f4f2; color: #78716c; }
+.resume-version-dialog-field .resume-version-dialog-hint { color: #78716c; font-size: 11px; font-weight: 500; line-height: 1.4; }
 .resume-version-dialog-status { display: block; margin-top: 10px; color: #b91c1c; font-size: 11px; font-weight: 500; }
 .resume-version-dialog-actions { display: flex; justify-content: flex-end; gap: 7px; margin-top: 20px; }
 .resume-version-dialog-actions button { height: 31px; padding: 0 11px; border: 1px solid #d6d3d1; border-radius: 7px; background: #fff; color: #57534e; font: 600 11px var(--font-sans); cursor: pointer; }

@@ -3,11 +3,11 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { buildThirdPartyNotices } from './scripts/third-party-notices.js';
 import { findLegacyFiles, migrateAll } from './scripts/migrate.js';
+import { isValidVersionId, requireVersionId } from './src/version-id.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dataRoot = path.resolve(__dirname, 'data');
@@ -16,7 +16,7 @@ const catalogPath = path.join(dataRoot, 'catalog.json');
 const execFileAsync = promisify(execFile);
 
 function versionPath(versionId) {
-  if (!/^[a-z0-9-]+$/i.test(versionId)) throw new Error('非法版本 ID');
+  if (!isValidVersionId(versionId)) throw new Error('非法版本 ID');
   return path.join(dataRoot, 'versions', `${versionId}.json`);
 }
 
@@ -84,10 +84,6 @@ function moveEntries(catalog, versionId, targetId, placement) {
   return { ...catalog, versions: remaining };
 }
 
-function newVersionId() {
-  return `v-${Date.now().toString(36)}-${randomUUID().slice(0, 8)}`;
-}
-
 const EMPTY_RESUME = {
   schemaVersion: 3,
   name: '', title: '', experience: '',
@@ -131,12 +127,14 @@ function resumeSourceSyncPlugin() {
             return;
           }
           if (req.method === 'POST' && parts.length === 0) {
-            const { name, parentId = null, copyFromVersionId = null } = await readRequestJson(req);
+            const { name, fileName, parentId = null, copyFromVersionId = null } = await readRequestJson(req);
             const normalizedName = String(name || '').trim();
             if (!normalizedName) throw new Error('版本名称不能为空');
             if (parentId !== null) getVersion(catalog, parentId);
             const source = copyFromVersionId === null ? null : getVersion(catalog, copyFromVersionId);
-            const versionId = newVersionId();
+            const versionId = requireVersionId(fileName);
+            if (catalog.versions.some(item => item.id === versionId)) throw new Error(`文件名已存在：${versionId}.json`);
+            if (fs.existsSync(versionPath(versionId))) throw new Error(`文件名已存在：${versionId}.json`);
             const now = new Date().toISOString();
             const version = { id: versionId, name: normalizedName, parentId, file: `versions/${versionId}.json`, createdAt: now, updatedAt: now };
             const data = source ? await readJsonWithMigration(versionPath(source.id)) : EMPTY_RESUME;

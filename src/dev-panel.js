@@ -1,5 +1,6 @@
 import './dev-panel.css';
 import { t } from './app-i18n.js';
+import { defaultVersionFileName, isValidVersionId, uniqueVersionId, versionIdFromFileName } from './version-id.js';
 import { getStoredPageSeparators, setPageSeparators, refreshPageSeparators } from './page-separator-mode.js';
 import { exportResumeImage } from './image-export.js';
 import { createIcons } from 'lucide';
@@ -185,6 +186,7 @@ export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThe
     <form class="resume-version-dialog-card" data-version-dialog-form aria-modal="true" aria-labelledby="resume-version-dialog-title">
       <div class="resume-version-dialog-header"><h2 id="resume-version-dialog-title" data-version-dialog-title></h2></div>
       <label class="resume-version-dialog-field"><span>${t(locale, 'version.nameLabel')}</span><input type="text" data-version-dialog-name required autocomplete="off" /></label>
+      <label class="resume-version-dialog-field"><span>${t(locale, 'version.fileNameLabel')}</span><input type="text" data-version-dialog-file required autocomplete="off" spellcheck="false" /><small class="resume-version-dialog-hint" data-version-dialog-file-hint></small></label>
       <label class="resume-version-dialog-field" data-version-dialog-parent-field><span>${t(locale, 'version.parentLabel')}</span><select data-version-dialog-parent></select></label>
       <output class="resume-version-dialog-status" data-version-dialog-status hidden></output>
       <div class="resume-version-dialog-actions"><button type="button" data-version-dialog-cancel>${t(locale, 'version.cancel')}</button><button type="submit" class="primary" data-version-dialog-submit>${t(locale, 'version.confirm')}</button></div>
@@ -220,6 +222,8 @@ export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThe
   const versionDialogForm = versionDialog.querySelector('[data-version-dialog-form]');
   const versionDialogTitle = versionDialog.querySelector('[data-version-dialog-title]');
   const versionDialogName = versionDialog.querySelector('[data-version-dialog-name]');
+  const versionDialogFile = versionDialog.querySelector('[data-version-dialog-file]');
+  const versionDialogFileHint = versionDialog.querySelector('[data-version-dialog-file-hint]');
   const versionDialogParent = versionDialog.querySelector('[data-version-dialog-parent]');
   const versionDialogParentField = versionDialog.querySelector('[data-version-dialog-parent-field]');
   const versionDialogStatus = versionDialog.querySelector('[data-version-dialog-status]');
@@ -253,6 +257,7 @@ export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThe
     versionStatus.hidden = false;
   }
   let versionDialogState = null;
+  let versionDialogFileNameDirty = false;
   function setVersionDialogStatus(message) {
     versionDialogStatus.textContent = message;
     versionDialogStatus.hidden = false;
@@ -262,13 +267,19 @@ export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThe
     versionDialogState = null;
     versionDialogStatus.hidden = true;
   }
-  function openVersionDialog({ mode, sourceVersionId = null, parentId = null, initialName = '' }) {
+  function openVersionDialog({ mode, sourceVersionId = null, parentId = null, initialName = '', initialFileName = null }) {
     closeVersionMenu();
     versionDialogState = { mode, sourceVersionId };
-    versionDialogTitle.textContent = t(locale, mode === 'copy' ? 'version.copyTitle' : mode === 'rename' ? 'version.renameTitle' : 'version.newTitle');
+    const renaming = mode === 'rename';
+    versionDialogTitle.textContent = t(locale, mode === 'copy' ? 'version.copyTitle' : renaming ? 'version.renameTitle' : 'version.newTitle');
     versionDialogName.value = initialName;
+    // 重命名只改显示名称，文件名保持不动，因此这里只展示当前文件名。
+    versionDialogFile.disabled = renaming;
+    versionDialogFile.value = `${renaming ? sourceVersionId : initialFileName ?? defaultVersionFileName(initialName)}.json`;
+    versionDialogFileHint.textContent = t(locale, renaming ? 'version.fileNameLocked' : 'version.fileNameHint');
+    versionDialogFileNameDirty = mode === 'copy';
     versionDialogParent.innerHTML = renderParentOptions(catalog, parentId, locale);
-    versionDialogParentField.hidden = mode === 'new-root' || mode === 'rename';
+    versionDialogParentField.hidden = mode === 'new-root' || renaming;
     versionDialogStatus.hidden = true;
     versionDialog.hidden = false;
     requestAnimationFrame(() => versionDialogName.focus());
@@ -412,22 +423,35 @@ export function initDevPanel({ currentTheme, defaultTheme, defaultSpacing, onThe
     const version = (catalog?.versions || []).find(item => item.id === versionId);
     if (action === 'new-root') openVersionDialog({ mode: 'new-root' });
     else if (action === 'new') openVersionDialog({ mode: 'new', parentId: versionId });
-    else if (action === 'copy' && version) openVersionDialog({ mode: 'copy', sourceVersionId: versionId, parentId: versionId, initialName: t(locale, 'version.copyName', { name: version.name }) });
+    else if (action === 'copy' && version) openVersionDialog({ mode: 'copy', sourceVersionId: versionId, parentId: versionId, initialName: t(locale, 'version.copyName', { name: version.name }), initialFileName: uniqueVersionId(`${versionId}-copy`, (catalog?.versions || []).map(item => item.id)) });
     else if (action === 'rename' && version) openVersionDialog({ mode: 'rename', sourceVersionId: versionId, initialName: version.name });
     else if (action === 'delete' && version && window.confirm(t(locale, 'version.deleteConfirm', { name: version.name }))) {
       try { await onVersionDelete?.(versionId); } catch (error) { setVersionStatus(t(locale, 'version.deleteFailed', { message: error.message || String(error) })); }
     }
   }));
+  versionDialogName.addEventListener('input', () => {
+    // 文件名跟随名称联动，直到用户亲手改过文件名为止。
+    if (versionDialogFileNameDirty || versionDialogFile.disabled) return;
+    versionDialogFile.value = `${defaultVersionFileName(versionDialogName.value)}.json`;
+  });
+  versionDialogFile.addEventListener('input', () => { versionDialogFileNameDirty = true; });
   versionDialogForm.addEventListener('submit', async event => {
     event.preventDefault();
     if (!versionDialogState) return;
     const name = versionDialogName.value.trim();
     if (!name) { setVersionDialogStatus(t(locale, 'version.nameRequired')); versionDialogName.focus(); return; }
+    const renaming = versionDialogState.mode === 'rename';
+    const fileName = versionDialogFile.value.trim();
+    if (!renaming) {
+      const fileId = versionIdFromFileName(fileName);
+      if (!isValidVersionId(fileId)) { setVersionDialogStatus(t(locale, 'version.fileNameInvalid')); versionDialogFile.focus(); return; }
+      if ((catalog?.versions || []).some(item => item.id === fileId)) { setVersionDialogStatus(t(locale, 'version.fileNameTaken', { fileName: `${fileId}.json` })); versionDialogFile.focus(); return; }
+    }
     const parentId = versionDialogParentField.hidden ? null : (versionDialogParent.value || null);
     try {
-      if (versionDialogState.mode === 'copy') await onVersionCopy?.({ name, sourceVersionId: versionDialogState.sourceVersionId, parentId });
-      else if (versionDialogState.mode === 'rename') await onVersionRename?.({ versionId: versionDialogState.sourceVersionId, name });
-      else await onVersionCreate?.({ name, parentId });
+      if (versionDialogState.mode === 'copy') await onVersionCopy?.({ name, fileName, sourceVersionId: versionDialogState.sourceVersionId, parentId });
+      else if (renaming) await onVersionRename?.({ versionId: versionDialogState.sourceVersionId, name });
+      else await onVersionCreate?.({ name, fileName, parentId });
       closeVersionDialog();
     } catch (error) {
       const key = versionDialogState.mode === 'copy' ? 'version.copyFailed' : versionDialogState.mode === 'rename' ? 'version.renameFailed' : 'version.createFailed';

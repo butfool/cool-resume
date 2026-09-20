@@ -135,15 +135,15 @@ async function reloadAfterVersionMutation(versionId, wasOpen) {
   createPanel();
 }
 
-async function createVersion({ name, parentId = null }) {
+async function createVersion({ name, fileName, parentId = null }) {
   const wasOpen = editorController?.isOpen();
-  const result = await resumeStore.createVersion({ name, parentId });
+  const result = await resumeStore.createVersion({ name, fileName, parentId });
   await reloadAfterVersionMutation(result.versionId, wasOpen);
 }
 
-async function copyVersion({ name, sourceVersionId, parentId = null }) {
+async function copyVersion({ name, fileName, sourceVersionId, parentId = null }) {
   const wasOpen = editorController?.isOpen();
-  const result = await resumeStore.createVersion({ name, parentId, copyFromVersionId: sourceVersionId });
+  const result = await resumeStore.createVersion({ name, fileName, parentId, copyFromVersionId: sourceVersionId });
   await reloadAfterVersionMutation(result.versionId, wasOpen);
 }
 
